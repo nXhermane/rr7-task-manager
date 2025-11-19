@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/.server/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  hashPassword String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tasks Task[]
+}
+
+model Task {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  status      TastkStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  subtasks   Task[]  @relation("TaskSubtasks")
+  parentTask Task?   @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId   String?
+
+  @@index([parentId])
+}
+
+enum TastkStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
