@@ -4,8 +4,6 @@ import { AddTaskModal } from "./AddTaskModal";
 
 export function ActionBar () {
     const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false);
-
-
     return  <>
    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-4">

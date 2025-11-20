@@ -39,3 +39,24 @@ export const UpdateTaskInput = z.object({
     description: z.string().min(1).max(255).nullable(),
     status: z.enum(Object.values(TastkStatus)).nullable(),
 });
+
+export const PaginationInput = z.object({
+    page: z.number().min(1).default(1),
+    perPage: z.number().min(1).max(100).default(10),
+}).refine((data) => {
+    return data.page >= 1 && data.perPage >= 1 && data.perPage <= 100;
+}, {
+    message: "Invalid pagination parameters"
+});
+
+export const UserOutput = z.object({
+    id: z.uuid(),
+    name: z.string(),
+    email: z.email(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+export const UpdateUserInput = z.object({
+    name: z.string().optional(),
+    email: z.email().optional(),
+})

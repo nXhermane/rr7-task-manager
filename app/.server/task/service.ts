@@ -1,5 +1,6 @@
+import { TastkStatus } from "../generated/prisma/enums";
 import { prisma } from "../utils/prisma";
-import type { CreateTaskDto, TaskDto, UpdateTaskDto } from "./dtos";
+import type { CreateTaskDto, PaginatedData, PaginationDto, TaskDto, TaskStats, UpdateTaskDto } from "./dtos";
 
 
 export async function createTask(userId: string, dto: CreateTaskDto): Promise<TaskDto> {
@@ -21,41 +22,72 @@ export async function createTask(userId: string, dto: CreateTaskDto): Promise<Ta
     }
 }
 
-export async function getTasks(userId: string): Promise<TaskDto[]> {
-    const tasks = await prisma.task.findMany({
-        where: {
-            userId,
-            parentId: null
-        }
-    })
-    return tasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        parentId: task.parentId,
-        status: task.status,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-    }));
+export async function getTasks(userId: string, pagination: PaginationDto): Promise<PaginatedData<TaskDto>> {
+    const [tasks, count] = await Promise.all([
+        prisma.task.findMany({
+            skip: (pagination.page - 1) * pagination.perPage,
+            take: pagination.perPage,
+            where: {
+                userId,
+                parentId: null
+            },
+        }),
+        prisma.task.count({
+            where: {
+                userId,
+                parentId: null
+            }
+        })
+    ]);
+    return {
+        data: tasks.map((task) => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            parentId: task.parentId,
+            status: task.status,
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt,
+        })),
+        total: count,
+        page: pagination.page,
+        perPage: pagination.perPage,
+        totalPage: Math.ceil(count / pagination.perPage),
+    }
 }
 
-
-export async function getSubTask(userId: string, taskId: string): Promise<TaskDto[]> {
-    const tasks = await prisma.task.findMany({
-        where: {
-            userId,
-            parentId: taskId
-        }
-    });
-    return tasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        parentId: task.parentId,
-        status: task.status,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-    }));
+export async function getSubTask(userId: string, taskId: string, pagination: PaginationDto): Promise<PaginatedData<TaskDto>> {
+    const [tasks, count] = await Promise.all([
+        prisma.task.findMany({
+            skip: (pagination.page - 1) * pagination.perPage,
+            take: pagination.perPage,
+            where: {
+                userId,
+                parentId: taskId
+            },
+        }),
+        prisma.task.count({
+            where: {
+                userId,
+                parentId: taskId
+            }
+        })
+    ])
+    return {
+        data: tasks.map((task) => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            parentId: task.parentId,
+            status: task.status,
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt,
+        })),
+        total: count,
+        page: pagination.page,
+        perPage: pagination.perPage,
+        totalPage: Math.ceil(count / pagination.perPage),
+    }
 }
 
 export async function updateTask(userId: string, taskId: string, dto: UpdateTaskDto): Promise<TaskDto> {
@@ -88,4 +120,21 @@ export async function deleteTask(userId: string, taskId: string) {
     })
 }
 
-// task statss
+export async function getUserTaskStats(userId: string): Promise<TaskStats> {
+    const [total, completed, pending, inProgress] = await Promise.all([
+        prisma.task.count({ where: { userId } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.COMPLETED } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.PENDING } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.IN_PROGRESS } }),
+    ]);
+    return { total, completed, pending, inProgress };
+}
+export async function getTaskStats(userId: string, taskId: string): Promise<TaskStats> {
+    const [total, completed, pending, inProgress] = await Promise.all([
+        prisma.task.count({ where: { userId, parentId: taskId } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.COMPLETED, parentId: taskId } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.PENDING, parentId: taskId } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.IN_PROGRESS, parentId: taskId } }),
+    ]);
+    return { total, completed, pending, inProgress };
+}

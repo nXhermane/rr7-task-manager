@@ -33,7 +33,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
 
     return <Dialog open={props.isVisible} onOpenChange={(open) => !open && props.onClose()}>
 
-        <DialogOverlay className=" backdrop-blur-xs  items-center justify-center z-50" />
+        <DialogOverlay className="backdrop-blur-xs  items-center justify-center z-50" />
         <DialogContent className="bg-slate-800 text-white rounded-2xl p-8 max-w-sm w-full mx-4 border border-slate-700 shadow-2xl" showCloseButton={false}>
             <DialogHeader className="flex flex-row items-center justify-between mb-6">
                 <DialogTitle className="text-2xl font-bold">Nouvelle Tâche</DialogTitle>
