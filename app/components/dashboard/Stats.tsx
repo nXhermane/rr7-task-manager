@@ -1,16 +1,15 @@
-import { useStats } from "~/hooks/useStats";
+import { useEffect } from "react"
+import { useFetcher } from "react-router"
+
 
 export function Stats () {
-  const stats = useStats();
-
-
 
   return   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-blue-500/50 transition">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-sm">Total Tâches</p>
-            <p className="text-3xl font-bold mt-2" id="total-tasks">{stats.total}</p>
+            <p className="text-3xl font-bold mt-2" id="total-tasks">{0}</p>
           </div>
           <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,7 +23,7 @@ export function Stats () {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-sm">En Attente</p>
-            <p className="text-3xl font-bold mt-2 text-yellow-400" id="pending-tasks">{stats.pending}</p>
+            <p className="text-3xl font-bold mt-2 text-yellow-400" id="pending-tasks">{0}</p>
           </div>
           <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +37,7 @@ export function Stats () {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-sm">En Cours</p>
-            <p className="text-3xl font-bold mt-2 text-purple-400" id="progress-tasks">{stats.progress}</p>
+            <p className="text-3xl font-bold mt-2 text-purple-400" id="progress-tasks">{0}</p>
           </div>
           <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +51,7 @@ export function Stats () {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-sm">Terminées</p>
-            <p className="text-3xl font-bold mt-2 text-green-400" id="completed-tasks">{stats.completed}</p>
+            <p className="text-3xl font-bold mt-2 text-green-400" id="completed-tasks">{0}</p>
           </div>
           <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

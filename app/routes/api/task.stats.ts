@@ -1,0 +1,44 @@
+import { data, type ClientLoaderFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import { authRequire } from "../../server/auth/middleware";
+import { userContext } from "~/lib/context";
+import { BadRequestError, UnauthorizedError } from "../../server/utils/error";
+import { getTaskStats } from "../../server/task/service";
+import { queryOptions } from "@tanstack/react-query";
+import { queryClient } from "~/lib/query_client";
+
+export const middleware = [authRequire]
+export const taskStatsQuery = (userId: string, taskId: string) => {
+  return queryOptions({
+    queryKey: ["taskStats", taskId],
+    queryFn: async () => await getTaskStats(userId, taskId),
+    enabled: !!userId && !!taskId
+  })
+}
+
+export async function loader({ request, context, params }: LoaderFunctionArgs) {
+  const user = context.get(userContext);
+  if (user === null) {
+    throw new UnauthorizedError('You must be logged in to access this resource.')
+  }
+  const taskId = params?.id;
+  if (!taskId) {
+    throw new BadRequestError('Task ID is required');
+  }
+  const stats = await getTaskStats(user.id, taskId)
+  return data({ userId: user.id, taskId, stats })
+}
+
+export async function clientLoader({ request, context, params, serverLoader }: ClientLoaderFunctionArgs) {
+  const user = context.get(userContext);
+  if (user === null) {
+    throw new UnauthorizedError('You must be logged in to access this resource.')
+  }
+  const taskId = params?.id;
+  if (!taskId) {
+    throw new BadRequestError('Task ID is required');
+  }
+  const response = await serverLoader()
+  console.log(response)
+  return data(null)
+  // return data({ userId: user.id, taskId, stats })
+}

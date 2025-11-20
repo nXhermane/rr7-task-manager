@@ -1,5 +1,5 @@
 import z from "zod";
-import { TastkStatus } from "~/.server/generated/prisma/enums";
+import { TastkStatus } from "~/server/generated/prisma/enums";
 
 export const SignUpInput = z.object({
     name: z.string({

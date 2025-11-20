@@ -1,12 +1,21 @@
-import { data, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import { data, redirect, type ActionFunctionArgs, type ClientActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { userContext } from "~/lib/context";
-import { createTask, deleteTask, getTask, getTasks, updateTask } from "../task/service";
-import { BadRequestError, handleError, UnauthorizedError } from "../utils/error";
-import { authRequire } from "../auth/middleware";
+import { createTask, deleteTask, getTask, getTasks, updateTask } from "../../server/task/service";
+import { BadRequestError, handleError, UnauthorizedError } from "../../server/utils/error";
+import { authRequire } from "../../server/auth/middleware";
 import { CreateTaskInput, UpdateTaskInput } from "~/lib/schema";
+import { queryOptions } from "@tanstack/react-query";
+import { queryClient } from "~/lib/query_client";
 
 export const middleware = [authRequire]
 
+export const taskQuery = (userId: string, taskId: string) => {
+    return queryOptions({
+        queryKey: ["task", taskId],
+        queryFn: async () => await getTask(userId, taskId),
+        enabled: !!userId && !!taskId
+    })
+}
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
     const user = context.get(userContext);
@@ -17,13 +26,12 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     if(!taskId) {
         throw new BadRequestError('Task ID is required');
     }
-    const tasks = await getTask(user.id,taskId);
-    return data(tasks);
+    const task = await getTask(user.id, taskId)
+    return data({ task });
 }
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
     try {
-        console.log('task api action')
         const requestMethod = request.method;
         const formData = Object.fromEntries(await request.formData())
         const user = context.get(userContext)
@@ -42,10 +50,10 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
                         });
                     }
                     const task = await createTask(user.id, validationResult.data)
-                    console.log('add task post request')
-                    return data({
+                    console.log(task)
+                    return {
                         task: task
-                    });
+                    }
                 }
 
             case "PUT":
@@ -84,6 +92,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
             default:
         }
     } catch (error) {
+        console.error(error)
         const handled = handleError(error)
         return data({
             status: handled.code,

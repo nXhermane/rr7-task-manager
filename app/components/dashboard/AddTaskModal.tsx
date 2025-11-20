@@ -18,26 +18,39 @@ interface AddTaskModalProps {
 export function AddTaskModal(props: AddTaskModalProps) {
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const mutation = useMutation({
-        mutationKey: ['addTask'],
-        mutationFn: async (data: CreateTaskInput) => {
-            
-        },
-    })
-    const submit = useSubmit()
     const addTaskFetchers = useFetcher<{ task: Task }>()
-    const onSubmit = async (data: CreateTaskInput & FormData) => {
-        setIsSubmitting(true)
-        await addTaskFetchers.submit(data, { method: 'post', action: '/api/task', })
+const onSubmit = async (data: CreateTaskInput & FormData) => {
+    setIsSubmitting(true)
+    try {
+        // Convertir les données en FormData
+        const formData = new FormData()
+        Object.entries(data).forEach(([key, value]) => {
+            formData.append(key, value as string)
+        })
+
+        const response = await fetch('/api/task', {
+            method: 'POST',
+            body: formData  // ✅ Pas de Content-Type, le navigateur le gère automatiquement
+        })
+        
+        const result = await response.json()
+        
+        if (response.ok && result.task) {
+            toast.success('Tâche créée avec succès')
+            // if (formRef.current) {
+            //     formRef.current.reset()
+            // }
+            // props.onClose()
+        } else {
+            toast.error('Erreur lors de la création')
+        }
+    } catch (error) {
+        toast.error('Erreur réseau')
+        console.error(error)
+    } finally {
         setIsSubmitting(false)
     }
-    useEffect(() => {
-        console.log('AddTaskModal useEffect')
-        if (addTaskFetchers.data) {
-            console.log(addTaskFetchers.data)
-            toast.success('Tâche créée avec succès')
-        }
-    }, [addTaskFetchers.data])
+}
 
     return <Dialog open={props.isVisible} onOpenChange={(open) => !open && props.onClose()}>
 
@@ -51,36 +64,35 @@ export function AddTaskModal(props: AddTaskModalProps) {
                     </svg>
                 </div>
             </DialogHeader>
-
-            <FieldGroup className="space-y-4">
-                <Field>
-                    <FieldLabel htmlFor="task-title">Titre</FieldLabel>
-                    <Input id="task-title" className="w-full h-12 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer le titre de la tâche" {...register("title", {
-                        required: true,
-                        minLength: { value: 3, message: "Le titre doit tre au moins 3 " }
-                    })} />
-                    {errors.title && <FieldError className="text-red-500">{errors.title.message?.toString()}</FieldError>}
-                </Field>
-                <Field>
-                    <FieldLabel htmlFor="task-description">Description</FieldLabel>
-                    <Textarea id="task-description" className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer la description de la tâche" {...register("description", {
-                        required: false,
-                        minLength: { value: 3, message: "La description doit tre au moins 3 " }
-                    })} />
-                    {errors.description && <FieldError className="text-red-500">{errors.description.message?.toString()}</FieldError>}
-                </Field>
-                <DialogFooter className="flex space-x-3 mt-6 flex-row">
-                    <Field >
-                        <Button type="submit" onClick={handleSubmit(onSubmit as any)} className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
-                            {isSubmitting ? 'Création...' : 'Créer'}
-                        </Button>
+            <addTaskFetchers.Form onSubmit={handleSubmit(onSubmit as any)}>
+                <FieldGroup className="space-y-4">
+                    <Field>
+                        <FieldLabel htmlFor="task-title">Titre</FieldLabel>
+                        <Input id="task-title" className="w-full h-12 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer le titre de la tâche" {...register("title", {
+                            required: true,
+                            minLength: { value: 3, message: "Le titre doit tre au moins 3 " }
+                        })} />
+                        {errors.title && <FieldError className="text-red-500">{errors.title.message?.toString()}</FieldError>}
                     </Field>
-                    <Button type="button" onClick={() => props.onClose()} className="px-6 py-3 h-12 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
-                        Annuler
-                    </Button>
-                </DialogFooter>
-            </FieldGroup>
+                    <Field>
+                        <FieldLabel htmlFor="task-description">Description</FieldLabel>
+                        <Textarea id="task-description" className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer la description de la tâche" {...register("description", {
+                            required: false,
+                            minLength: { value: 3, message: "La description doit tre au moins 3 " }
+                        })} />
+                        {errors.description && <FieldError className="text-red-500">{errors.description.message?.toString()}</FieldError>}
+                    </Field>
+                    <DialogFooter className="flex space-x-3 mt-6 flex-row">
+                        <Field>
+                            <Button type="submit" className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
+                                {isSubmitting ? 'Création...' : 'Créer'}
+                            </Button>
+                        </Field>
+                    </DialogFooter>
+                </FieldGroup>
+            </addTaskFetchers.Form>
         </DialogContent>
+
     </Dialog>
 
 }
