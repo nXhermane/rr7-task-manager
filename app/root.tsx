@@ -10,6 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -41,10 +43,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+const queryClient = new QueryClient();
 export default function App() {
   return <>
-    <Outlet />
-    <Sonner />
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+      <Sonner />
+    </QueryClientProvider>
   </>
 
 }
