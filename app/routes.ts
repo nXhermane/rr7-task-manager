@@ -10,5 +10,8 @@ export default [
         route('signout', 'routes/auth/signout.tsx'),
     ])
     ,
-    route('/api/task/:id?', '.server/api/task.ts')
+    route('/api/task/:id?', '.server/api/task.ts'),
+    route('/api/task/:id/stats', '.server/api/task.stats.ts'),
+    route('/api/user/stats', '.server/api/user.stats.ts'),
+    route('/api/tasks', '.server/api/tasks.ts'),
 ] satisfies RouteConfig

@@ -1,4 +1,5 @@
 import { TastkStatus } from "../generated/prisma/enums";
+import { NotFoundError } from "../utils/error";
 import { prisma } from "../utils/prisma";
 import type { CreateTaskDto, PaginatedData, PaginationDto, TaskDto, TaskStats, UpdateTaskDto } from "./dtos";
 
@@ -11,6 +12,27 @@ export async function createTask(userId: string, dto: CreateTaskDto): Promise<Ta
             description: dto.description
         }
     });
+    return {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        parentId: task.parentId,
+        status: task.status,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+    }
+}
+
+export async function getTask (userId: string , taskId: string): Promise<TaskDto> {
+    const task = await  prisma.task.findUnique({
+        where: {
+            id: taskId,
+            userId,
+        },
+    });
+    if(task === null) {
+        throw new NotFoundError(`Task with id ${taskId} not found`)
+    }
     return {
         id: task.id,
         title: task.title,

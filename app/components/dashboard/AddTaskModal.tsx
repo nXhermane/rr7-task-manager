@@ -8,6 +8,8 @@ import { Textarea } from "../ui/textarea"
 import type { CreateTaskInput, Task } from "~/lib/types"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { useMutation } from "@tanstack/react-query"
+
 interface AddTaskModalProps {
     isVisible: boolean
     onClose: () => void
@@ -16,6 +18,12 @@ interface AddTaskModalProps {
 export function AddTaskModal(props: AddTaskModalProps) {
     const { register, handleSubmit, formState: { errors } } = useForm()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const mutation = useMutation({
+        mutationKey: ['addTask'],
+        mutationFn: async (data: CreateTaskInput) => {
+            
+        },
+    })
     const submit = useSubmit()
     const addTaskFetchers = useFetcher<{ task: Task }>()
     const onSubmit = async (data: CreateTaskInput & FormData) => {

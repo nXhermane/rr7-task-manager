@@ -1,11 +1,26 @@
-import { data, redirect, type ActionFunctionArgs } from "react-router";
+import { data, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { userContext } from "~/lib/context";
-import { createTask, deleteTask, updateTask } from "../task/service";
-import { handleError, UnauthorizedError } from "../utils/error";
+import { createTask, deleteTask, getTask, getTasks, updateTask } from "../task/service";
+import { BadRequestError, handleError, UnauthorizedError } from "../utils/error";
 import { authRequire } from "../auth/middleware";
 import { CreateTaskInput, UpdateTaskInput } from "~/lib/schema";
 
-export const middleware =[authRequire]
+export const middleware = [authRequire]
+
+
+export async function loader({ request, context, params }: LoaderFunctionArgs) {
+    const user = context.get(userContext);
+    if (user === null) {
+        throw new UnauthorizedError('You must be logged in to access this resource.')
+    }
+    const taskId = params?.id;
+    if(!taskId) {
+        throw new BadRequestError('Task ID is required');
+    }
+    const tasks = await getTask(user.id,taskId);
+    return data(tasks);
+}
+
 export async function action({ context, request, params }: ActionFunctionArgs) {
     try {
         console.log('task api action')
@@ -13,7 +28,6 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
         const formData = Object.fromEntries(await request.formData())
         const user = context.get(userContext)
         const taskId = params?.id;
-        console.log(user)
         if (user === null) {
             throw new UnauthorizedError('You must be logged in to access this resource.')
         }
