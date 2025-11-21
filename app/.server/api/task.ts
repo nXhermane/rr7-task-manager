@@ -1,27 +1,28 @@
-import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import { data, type ActionFunctionArgs, type ClientActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { userContext } from "~/lib/context";
-import { createTask, deleteTask, getTask, updateTask } from "../task/service";
-import { BadRequestError, handleError, UnauthorizedError } from "../utils/error";
 import { authRequire } from "../auth/middleware";
 import { CreateTaskInput, UpdateTaskInput } from "~/lib/schema";
 
 export const middleware = [authRequire]
 
-
-// export async function loader({ request, context, params }: LoaderFunctionArgs) {
-//     const user = context.get(userContext);
-//     if (user === null) {
-//         throw new UnauthorizedError('You must be logged in to access this resource.')
-//     }
-//     const taskId = params?.id;
-//     if(!taskId) {
-//         throw new BadRequestError('Task ID is required');
-//     }
-//     const task = await getTask(user.id, taskId)
-//     return data({ task });
-// }
+export async function loader({ context, params }: LoaderFunctionArgs) {
+    const {UnauthorizedError,BadRequestError} = await import('./../utils/error')
+    const {getTask} = await import('./../task/service')
+    const user = context.get(userContext);
+    if (user === null) {
+        throw new UnauthorizedError('You must be logged in to access this resource.')
+    }
+    const taskId = params?.id;
+    if(!taskId) {
+        throw new BadRequestError('Task ID is required');
+    }
+    const task = await getTask(user.id, taskId)
+    return data({ task });
+}
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
+    const { UnauthorizedError, handleError } = await import('./../utils/error')
+    const { createTask, deleteTask, updateTask } = await import('./../task/service')
     try {
         const requestMethod = request.method;
         const formData = Object.fromEntries(await request.formData())
@@ -41,7 +42,6 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
                         });
                     }
                     const task = await createTask(user.id, validationResult.data)
-                    console.log(task)
                     return {
                         task: task
                     }
@@ -64,7 +64,8 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
                     }
                     const task = await updateTask(user.id, taskId, validationResult.data)
                     return data({
-                        task: task
+                        task: task,
+                        message: 'Task updated successfully'
                     });
                 }
             case "DELETE": {
@@ -91,4 +92,3 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
         });
     }
 }
-

@@ -2,7 +2,9 @@ import { type RouteConfig, index, layout, prefix, route } from "@react-router/de
 
 export default [
     layout('routes/_layout.tsx', [
-        index('routes/dashboard.tsx')
+        layout('routes/dashboard.tsx',[
+            route('/:taskId?','routes/tasks.tsx')
+        ])
     ]),
     ...prefix('auth', [
         route('signin', 'routes/auth/signin.tsx'),
@@ -11,8 +13,8 @@ export default [
     ])
     ,
     route('/api/task/:id?', '.server/api/task.ts',),
+    route('/api/task/:id/tasks','.server/api/task.sub.ts'),
     route('/api/task/:id/stats', '.server/api/task.stats.ts'),
     route('/api/user/stats', '.server/api/user.stats.ts'),
     route('/api/tasks', '.server/api/tasks.ts'),
-    route('/api/test','.server/api/test.ts')
 ] satisfies RouteConfig

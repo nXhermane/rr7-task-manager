@@ -30,13 +30,13 @@ export const SignInInput = z.object({
 
 export const CreateTaskInput = z.object({
     title: z.string().min(1).max(255),
-    description: z.string().min(1).max(255).nullable(),
+    description: z.string().min(0).max(255).nullable(),
 })
 
 export const UpdateTaskInput = z.object({
-    title: z.string().min(1).max(255).nullable(),
-    description: z.string().min(1).max(255).nullable(),
-    status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]).nullable(),
+    title: z.string().min(1).max(255).nullish(),
+    description: z.string().min(1).max(255).nullish(),
+    status: z.optional(z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"])),
 });
 
 export const PaginationInput = z.object({

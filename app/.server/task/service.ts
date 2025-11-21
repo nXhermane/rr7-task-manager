@@ -1,7 +1,8 @@
+import type { PaginatedData, TaskStats } from "~/lib/types";
 import { TastkStatus } from "../generated/prisma/enums";
-import { NotFoundError } from "../utils/error";
+import { BadRequestError, NotFoundError } from "../utils/error";
 import { prisma } from "../utils/prisma";
-import type { CreateTaskDto, PaginatedData, PaginationDto, TaskDto, TaskStats, UpdateTaskDto } from "./dtos";
+import type { CreateTaskDto, PaginationDto, TaskDto, UpdateTaskDto } from "./dtos";
 
 
 export async function createTask(userId: string, dto: CreateTaskDto): Promise<TaskDto> {
@@ -20,7 +21,38 @@ export async function createTask(userId: string, dto: CreateTaskDto): Promise<Ta
         status: task.status,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
+        totalSubTasks: 0
     }
+}
+
+export async function createSubTask(userId: string , parentId: string , dto: CreateTaskDto) : Promise<TaskDto> {
+     const exists = await prisma.task.findUnique({
+        where: {
+            id: parentId,
+            userId: userId
+        }
+     })
+     if(exists === null) {
+        throw new BadRequestError('The parent task not found')
+     } 
+      const task = await prisma.task.create({
+        data: {
+            userId,
+            parentId,
+            title: dto.title,
+            description: dto.description,
+        }
+    });
+    return {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        parentId: task.parentId,
+        status: task.status,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        totalSubTasks: 0
+    }  
 }
 
 export async function getTask (userId: string , taskId: string): Promise<TaskDto> {
@@ -29,6 +61,13 @@ export async function getTask (userId: string , taskId: string): Promise<TaskDto
             id: taskId,
             userId,
         },
+         include: {
+                _count: {
+                    select: {
+                        subtasks: true
+                    }
+                }
+            }
     });
     if(task === null) {
         throw new NotFoundError(`Task with id ${taskId} not found`)
@@ -41,6 +80,7 @@ export async function getTask (userId: string , taskId: string): Promise<TaskDto
         status: task.status,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
+        totalSubTasks: task._count.subtasks
     }
 }
 
@@ -53,6 +93,16 @@ export async function getTasks(userId: string, pagination: PaginationDto): Promi
                 userId,
                 parentId: null
             },
+            include: {
+                _count: {
+                    select: {
+                        subtasks: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
         }),
         prisma.task.count({
             where: {
@@ -70,6 +120,7 @@ export async function getTasks(userId: string, pagination: PaginationDto): Promi
             status: task.status,
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
+            totalSubTasks: task._count.subtasks
         })),
         total: count,
         page: pagination.page,
@@ -87,6 +138,13 @@ export async function getSubTask(userId: string, taskId: string, pagination: Pag
                 userId,
                 parentId: taskId
             },
+             include: {
+                _count: {
+                    select: {
+                        subtasks: true
+                    }
+                }
+            }
         }),
         prisma.task.count({
             where: {
@@ -104,6 +162,7 @@ export async function getSubTask(userId: string, taskId: string, pagination: Pag
             status: task.status,
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
+            totalSubTasks: task._count.subtasks
         })),
         total: count,
         page: pagination.page,
@@ -112,8 +171,8 @@ export async function getSubTask(userId: string, taskId: string, pagination: Pag
     }
 }
 
-export async function updateTask(userId: string, taskId: string, dto: UpdateTaskDto): Promise<TaskDto> {
-    const task = await prisma.task.update({
+export async function updateTask(userId: string, taskId: string, dto: UpdateTaskDto): Promise<void> {
+   await prisma.task.update({
         where: {
             id: taskId,
             userId,
@@ -124,15 +183,7 @@ export async function updateTask(userId: string, taskId: string, dto: UpdateTask
             status: dto.status || undefined,
         },
     });
-    return {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        parentId: task.parentId,
-        status: task.status,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-    };
+    
 }
 export async function deleteTask(userId: string, taskId: string) {
     await prisma.task.delete({
@@ -145,10 +196,10 @@ export async function deleteTask(userId: string, taskId: string) {
 export async function getUserTaskStats(userId: string): Promise<TaskStats> {
     console.log('[getUserTaskStats]', userId)
     const [total, completed, pending, inProgress] = await Promise.all([
-        prisma.task.count({ where: { userId } }),
-        prisma.task.count({ where: { userId, status: TastkStatus.COMPLETED } }),
-        prisma.task.count({ where: { userId, status: TastkStatus.PENDING } }),
-        prisma.task.count({ where: { userId, status: TastkStatus.IN_PROGRESS } }),
+        prisma.task.count({ where: { userId , parentId: null } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.COMPLETED,parentId: null } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.PENDING, parentId: null } }),
+        prisma.task.count({ where: { userId, status: TastkStatus.IN_PROGRESS ,parentId: null} }),
     ]);
     return { total, completed, pending, inProgress };
 }

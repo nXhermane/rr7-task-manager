@@ -28,17 +28,3 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
   return data({ userId: user.id, taskId, stats })
 }
 
-export async function clientLoader({ request, context, params, serverLoader }: ClientLoaderFunctionArgs) {
-  const user = context.get(userContext);
-  if (user === null) {
-    throw new UnauthorizedError('You must be logged in to access this resource.')
-  }
-  const taskId = params?.id;
-  if (!taskId) {
-    throw new BadRequestError('Task ID is required');
-  }
-  const response = await serverLoader()
-  console.log(response)
-  return data(null)
-  // return data({ userId: user.id, taskId, stats })
-}

@@ -10,22 +10,10 @@ export const TaskOutput = z.object({
     status: z.enum(Object.values(TastkStatus)),
     createdAt: z.date(),
     updatedAt: z.date(),
+    totalSubTasks: z.number()
 })
 
 export type CreateTaskDto = z.infer<typeof CreateTaskInput>;
 export type UpdateTaskDto = z.infer<typeof UpdateTaskInput>;
 export type TaskDto = z.infer<typeof TaskOutput>;
 export type PaginationDto = z.infer<typeof PaginationInput>;
-export type PaginatedData<T> = {
-    data: T []
-    total: number
-    page: number
-    perPage: number
-    totalPage: number
-}
-export type TaskStats = {
-    total: number
-    completed: number
-    pending: number
-    inProgress: number
-}

@@ -19,12 +19,33 @@ export type Task = {
   title: string;
   description: string | null;
   parentId: string | null;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  status:  "PENDING" | "IN_PROGRESS" | "COMPLETED"
+  createdAt: string;
+  updatedAt: string;
+  totalSubTasks: number
 }
 
 export type CreateTaskInput = {
   title: string;
   description: string | null;
+}
+export type TaskStats = {
+    total: number
+    completed: number
+    pending: number
+    inProgress: number
+}
+export type PaginatedData<T> = {
+    data: T []
+    total: number
+    page: number
+    perPage: number
+    totalPage: number
+}
+
+
+export type UpdateTaskDto = {
+    title?: string | null | undefined;
+    description?: string | null | undefined;
+    status?: "PENDING" | "IN_PROGRESS" | "COMPLETED" | undefined;
 }
