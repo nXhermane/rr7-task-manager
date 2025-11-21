@@ -1,8 +1,8 @@
 import { data, type ClientLoaderFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { authRequire } from "../../server/auth/middleware";
+import { authRequire } from "../auth/middleware";
 import { userContext } from "~/lib/context";
-import { BadRequestError, UnauthorizedError } from "../../server/utils/error";
-import { getTaskStats } from "../../server/task/service";
+import { BadRequestError, UnauthorizedError } from "../utils/error";
+import { getTaskStats } from "../task/service";
 import { queryOptions } from "@tanstack/react-query";
 import { queryClient } from "~/lib/query_client";
 

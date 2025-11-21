@@ -1,5 +1,4 @@
 import z from "zod";
-import { TastkStatus } from "~/server/generated/prisma/enums";
 
 export const SignUpInput = z.object({
     name: z.string({
@@ -37,7 +36,7 @@ export const CreateTaskInput = z.object({
 export const UpdateTaskInput = z.object({
     title: z.string().min(1).max(255).nullable(),
     description: z.string().min(1).max(255).nullable(),
-    status: z.enum(Object.values(TastkStatus)).nullable(),
+    status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]).nullable(),
 });
 
 export const PaginationInput = z.object({

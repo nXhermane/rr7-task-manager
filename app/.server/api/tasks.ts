@@ -1,9 +1,9 @@
 import { type LoaderFunctionArgs, data } from "react-router";
 import { userContext } from "~/lib/context";
-import { getTasks } from "../../server/task/service";
-import { UnauthorizedError } from "../../server/utils/error";
-import { authRequire } from "../../server/auth/middleware";
-import type { PaginationDto } from "../../server/task/dtos";
+import { getTasks } from "../task/service";
+import { UnauthorizedError } from "../utils/error";
+import { authRequire } from "../auth/middleware";
+import type { PaginationDto } from "../task/dtos";
 import { queryOptions } from "@tanstack/react-query";
 import { queryClient } from "~/lib/query_client";
 

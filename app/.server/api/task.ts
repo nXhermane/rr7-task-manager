@@ -1,34 +1,25 @@
-import { data, redirect, type ActionFunctionArgs, type ClientActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { userContext } from "~/lib/context";
-import { createTask, deleteTask, getTask, getTasks, updateTask } from "../../server/task/service";
-import { BadRequestError, handleError, UnauthorizedError } from "../../server/utils/error";
-import { authRequire } from "../../server/auth/middleware";
+import { createTask, deleteTask, getTask, updateTask } from "../task/service";
+import { BadRequestError, handleError, UnauthorizedError } from "../utils/error";
+import { authRequire } from "../auth/middleware";
 import { CreateTaskInput, UpdateTaskInput } from "~/lib/schema";
-import { queryOptions } from "@tanstack/react-query";
-import { queryClient } from "~/lib/query_client";
 
 export const middleware = [authRequire]
 
-export const taskQuery = (userId: string, taskId: string) => {
-    return queryOptions({
-        queryKey: ["task", taskId],
-        queryFn: async () => await getTask(userId, taskId),
-        enabled: !!userId && !!taskId
-    })
-}
 
-export async function loader({ request, context, params }: LoaderFunctionArgs) {
-    const user = context.get(userContext);
-    if (user === null) {
-        throw new UnauthorizedError('You must be logged in to access this resource.')
-    }
-    const taskId = params?.id;
-    if(!taskId) {
-        throw new BadRequestError('Task ID is required');
-    }
-    const task = await getTask(user.id, taskId)
-    return data({ task });
-}
+// export async function loader({ request, context, params }: LoaderFunctionArgs) {
+//     const user = context.get(userContext);
+//     if (user === null) {
+//         throw new UnauthorizedError('You must be logged in to access this resource.')
+//     }
+//     const taskId = params?.id;
+//     if(!taskId) {
+//         throw new BadRequestError('Task ID is required');
+//     }
+//     const task = await getTask(user.id, taskId)
+//     return data({ task });
+// }
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
     try {
@@ -100,3 +91,4 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
         });
     }
 }
+
