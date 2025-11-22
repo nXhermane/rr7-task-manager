@@ -11,14 +11,14 @@ export interface TaskProps {
 export function Task({ task, isExpand = true, onPress, onDelete }: TaskProps) {
     const hasSubtasks = task.totalSubTasks != 0
     return <div onClick={onPress && onPress} className={`task-item bg-slate-800/50 backdrop-blur-sm border  rounded-xl  transition duration-300 ${getStatusColor(task.status)} `} >
-        <div className={isExpand ? 'p-5' : "px-3 py-3"}>
+        <div className={isExpand ? 'p-5 min-w-0' : "px-3 py-3"}>
             <div className="flex items-start justify-between">
-                <div className={`flex items-start space-x-4 flex-1 ${isExpand ? "" : "flex-col gap-2"}`}>
-                    <div className={`flex-1 ${!isExpand ? "w-full" : ""}`}>
+                <div className={`flex items-start space-x-4 flex-1 ${isExpand ? "min-w-0" : "min-w-0 flex-col gap-2"}`}>
+                    <div className={`flex-1 ${!isExpand ? "w-full" : "min-w-0"}`}>
                         <div className={`flex items-center space-x-3 mb-2 ${isExpand ? "" : "w-full justify-between"}`}>
-                            <h3 className={`text-lg font-semibold max-w-[90%] text-wrap`} >{task.title}</h3>
+                            <h3 className={`text-lg font-semibold truncate`} >{task.title}</h3>
                             {isExpand && <TaskBadge status={task.status} />}
-                            {hasSubtasks ? isExpand ? <span className="text-xs text-slate-400">({task.totalSubTasks} sous-tâches)</span> : <span className="text-xs bg-slate-700 px-2 py-1 rounded-full text-slate-300">{task.totalSubTasks}</span> : <></>}
+                            {hasSubtasks ? isExpand ? <span className="text-xs text-slate-400 text-nowrap">({task.totalSubTasks} sous-tâches)</span> : <span className="text-xs bg-slate-700 px-2 py-1 rounded-full text-slate-300">{task.totalSubTasks}</span> : <></>}
                         </div>
                         {(isExpand && task.description?.trim() != '') ? <p className="text-slate-400 text-sm mb-3">{task.description}</p> : ''}
 
@@ -54,9 +54,9 @@ export function Task({ task, isExpand = true, onPress, onDelete }: TaskProps) {
 
 export function TaskBadge(props: { status: TaskDto['status'] }) {
     switch (props.status) {
-        case "PENDING": return <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-semibold rounded-full">En attente</span>
-        case "IN_PROGRESS": return <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-semibold rounded-full">En cours</span>
-        case "COMPLETED": return <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full">Terminée</span>
+        case "PENDING": return <span className="px-3 py-1  text-nowrap bg-yellow-500/20 text-yellow-400 text-xs font-semibold rounded-full">En attente</span>
+        case "IN_PROGRESS": return <span className="px-3 py-1 text-nowrap bg-purple-500/20 text-purple-400 text-xs font-semibold rounded-full">En cours</span>
+        case "COMPLETED": return <span className="px-3 py-1 text-nowrap bg-green-500/20 text-green-400 text-xs font-semibold rounded-full">Terminée</span>
         default: return <></>
     }
 }

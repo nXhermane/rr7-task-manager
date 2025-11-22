@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/hermane/gks_solution/learning_projects/bun/rr7-task-manager/app/.server/generated/prisma",
+      "value": "/home/hermane/gks_solution/learning_projects/bun/react_router/rr7-task-manager/app/.server/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -37,7 +37,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/hermane/gks_solution/learning_projects/bun/rr7-task-manager/prisma/schema.prisma",
+    "sourceFilePath": "/home/hermane/gks_solution/learning_projects/bun/react_router/rr7-task-manager/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../../../prisma",

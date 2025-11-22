@@ -12,13 +12,13 @@ import { Virtuoso } from 'react-virtuoso'
 import { Spinner } from "~/components/ui/spinner"
 import { toast } from "sonner"
 import { AddSubTaskModal } from "./AddSubTaskModal"
+import { Plus } from "lucide-react"
 
 export function Tasks() {
     const queryClient = useQueryClient()
     const [currentTaskId, setCurrentTaskId] = useState<string>()
     const [currentParentId, setCurrentParentId] = useState<string>()
     const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false)
-
     const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } = useInfiniteQuery<PaginatedData<Task>>({
         queryKey: [TASKS, currentParentId],
         queryFn: ({ pageParam }) => currentParentId ? getPaginatedSubTask(currentParentId, pageParam as number) : getPaginatedTask(pageParam as number),
@@ -50,7 +50,7 @@ export function Tasks() {
     const flat = data.pages.flatMap(page => page.data)
     return <React.Fragment>
         <div className="mx-16">
-            <ResizablePanelGroup direction="horizontal" className="">
+            <ResizablePanelGroup direction={'horizontal'} className="">
                 <ResizablePanel defaultSize={30} minSize={25} className="transition-all duration-300">
                     <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl flex flex-col overflow-hidden transition-all duration-300">
                         <div className="p-4 border-b border-slate-700">
@@ -59,9 +59,7 @@ export function Tasks() {
                                 <Button onClick={() => {
                                     setShowAddTaskModal(true)
                                 }} className="p-2 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 font-semibold transition0 rounded-lg transition">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
+                                    <Plus className="w-4 h-4" />
                                 </Button>
                             </div>
 
@@ -106,24 +104,29 @@ export function Tasks() {
                         </div>
                     </div>
                 </ResizablePanel>
-                {currentTaskId && <>
-                    <ResizableHandle className="w-[0.09px] opacity-45 bg-slate-700 border-0 mx-5" />
-                    <ResizablePanel minSize={40} defaultSize={70} className=" max-h-[61vh] transition-all">
-                        <TaskDetail taskId={currentTaskId} onClose={async () => {
-                            if (currentParentId) {
-                                setCurrentTaskId(currentParentId)
-                                setCurrentParentId(undefined)
-                            } else {
-                                setCurrentTaskId(undefined)
-                            }
-                        }} onDelete={() => {
-                            deleteTaskMutation.mutate({ taskId: currentTaskId })
-                        }} onPressSubTask={async (subTaskId) => {
-                            setCurrentParentId(currentTaskId)
-                            setCurrentTaskId(subTaskId)
-                        }} />
-                    </ResizablePanel></>
-                }
+
+                {currentTaskId &&
+                    <ResizableHandle className="w-[0.09px] opacity-45 bg-slate-700 border-0 mx-5" />}
+              
+                    {currentTaskId ?
+                        <ResizablePanel minSize={40} defaultSize={70} className=" max-h-[61vh] transition-all">
+                            <TaskDetail taskId={currentTaskId} onClose={async () => {
+                                if (currentParentId) {
+                                    setCurrentTaskId(currentParentId)
+                                    setCurrentParentId(undefined)
+                                } else {
+                                    setCurrentTaskId(undefined)
+                                }
+                            }} onDelete={() => {
+                                deleteTaskMutation.mutate({ taskId: currentTaskId })
+                            }} onPressSubTask={async (subTaskId) => {
+                                setCurrentParentId(currentTaskId)
+                                setCurrentTaskId(subTaskId)
+                            }} />
+                        </ResizablePanel> : null
+                    }
+              
+
 
             </ResizablePanelGroup>
         </div>

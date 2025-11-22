@@ -23,9 +23,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
     const [showAddSubTaskModal, setShowAddSubTaskModal] = useState<boolean>(false);
     const [showDescriptionAddBtn, setShowDescriptionAddBtn] = useState<boolean>(false)
     const [showAddDescritpionInput, setShowAddDescriptionInput] = useState<boolean>(false)
-    // const [collapsed, setCollapsed] = useState<boolean>(true)
     const [editTitle, setEditTitle] = useState<boolean>(false)
-
     const deleteMutation = useMutation({
         mutationKey: [TASK, 'delete', taskId],
         mutationFn: ({ taskId: subTaskId }: { taskId: string }) => deleteTask(subTaskId),
@@ -46,7 +44,8 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
             queryClient.invalidateQueries({ queryKey: [USER_STATS] })
             toast.success('Task updated successfully')
         },
-        onError: () => {
+        onError: (e, { dto }) => {
+            console.error(e)
             toast.error("Failed to update task")
         }
     })
@@ -114,7 +113,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
     const hasSubtasks = flat.length > 0
     const hasDescription = typeof task.description === 'string' ? task.description.trim() !== '' : !!task?.description
     return <> <div className=" w-full h-full bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl flex flex-col overflow-hidden">
-        <div className="h-full flex flex-col slide-in-right">
+        <div className="h-full flex flex-col slide-in-right ">
             <div onMouseEnter={() => {
                 if (!hasDescription) {
                     setShowDescriptionAddBtn(true)
@@ -129,17 +128,19 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                         <h2
                             onBlur={(e) => {
                                 updateMutation.mutate({
-                                    taskId, dto: {
-                                        title: e.target.innerText.trim()
-                                    }
+                                    taskId, dto: { title: e.currentTarget.textContent }
                                 })
                                 setEditTitle(false)
-                            }} onDoubleClick={() => {
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.currentTarget.blur()
+                                }
+                            }}
+                            onDoubleClick={() => {
                                 setEditTitle(true)
-                            }} className={`text-2xl font-bold `} contentEditable={editTitle}>{task.title}</h2>
-
-
-                        {/* {!collapsed && <TaskBadge status={task.status || "IN_PROGRESS"} />} */}
+                            }} className={`text-2xl font-bold break-all ${editTitle && "border-slate-700/40 border p-1 rounded-lg"} `} contentEditable={editTitle} suppressContentEditableWarning>{task.title}</h2>
                     </div>
                     <div className="flex space-x-2">
                         <button onClick={() => {
@@ -152,19 +153,10 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                         </button>
                     </div>
                 </div>
-
-                {/* {!collapsed && <div className="text-sm text-slate-400 space-y-1">
-                    <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>Créée le {new Date(task.createdAt || '').toLocaleDateString('fr-FR')}</span>
-                    </div>
-                </div>} */}
                 {showDescriptionAddBtn && <Button onClick={() => {
                     setShowAddDescriptionInput(true)
                 }} className="absolute -bottom-6 left-1/2 -translate-x-1/2 border-none px-6 py-3 min-h-12 text-white bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    <Plus className="w-7 h-7" />
                     <span>Ajouter une description</span>
                 </Button>}
             </div>
@@ -190,13 +182,20 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                                     <p onBlur={(e) => {
                                         updateMutation.mutate({
                                             taskId, dto: {
-                                                description: e.target.innerText
+                                                description: e.currentTarget.textContent
                                             }
                                         })
                                         setShowAddDescriptionInput(false)
-                                    }} onDoubleClick={() => {
-                                        setShowAddDescriptionInput(true)
-                                    }} className="text-slate-300 leading-relaxed" contentEditable={showAddDescritpionInput} >{task.description}</p>
+                                    }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                e.currentTarget.blur()
+                                            }
+                                        }}
+                                        onDoubleClick={() => {
+                                            setShowAddDescriptionInput(true)
+                                        }} className={`text-slate-300 leading-relaxed ${showAddDescritpionInput && "border-slate-700/40 border p-1 rounded-lg"}`} contentEditable={showAddDescritpionInput} suppressContentEditableWarning >{task.description}</p>
 
                                 </div>}
 
