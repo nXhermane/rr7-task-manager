@@ -1,20 +1,17 @@
 import type { Task as TaskDto, TaskStats } from "~/lib/types"
 import { Button } from "../ui/button"
-import { useNavigate } from "react-router"
-import { useDeleteTask } from "~/hooks/useDeleteTask"
+import { Spinner } from "../ui/spinner"
 
 export interface TaskProps {
     task: TaskDto
     isExpand?: boolean
+    onPress?: () => void
+    onDelete?: () => void
 }
 
-export function Task({ task, isExpand = true }: TaskProps) {
-    const navigate = useNavigate()
-    const { deleteTask } = useDeleteTask(task.parentId)
+export function Task({ task, isExpand = true, onPress, onDelete }: TaskProps) {
     const hasSubtasks = task.totalSubTasks != 0
-    return <div onClick={() => {
-        navigate('/' + task.id)
-    }} className={`task-item bg-slate-800/50 backdrop-blur-sm border  rounded-xl  transition duration-300 ${getStatusColor(task.status)} `} >
+    return <div onClick={onPress && onPress} className={`task-item bg-slate-800/50 backdrop-blur-sm border  rounded-xl  transition duration-300 ${getStatusColor(task.status)} `} >
         <div className={isExpand ? 'p-5' : "px-3 py-3"}>
             <div className="flex items-start justify-between">
                 <div className={`flex items-start space-x-4 flex-1 ${isExpand ? "" : "flex-col gap-2"}`}>
@@ -44,7 +41,7 @@ export function Task({ task, isExpand = true }: TaskProps) {
                 {isExpand && <div className="flex items-center space-x-2 ml-4">
                     <Button onClick={(e) => {
                         e.stopPropagation()
-                        deleteTask(task.id)
+                        onDelete && onDelete()
                     }} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition" title="Supprimer">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

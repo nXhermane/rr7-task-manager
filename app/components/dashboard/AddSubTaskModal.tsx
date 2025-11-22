@@ -1,20 +1,19 @@
-import { useFetcher } from "react-router"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogOverlay, DialogTitle } from "../ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field"
 import { Input } from "../ui/input"
 import { useForm } from "react-hook-form"
 import { Textarea } from "../ui/textarea"
-import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CreateTaskInput as CreateTaskInputSchema } from "~/lib/schema"
-import type { CreateTaskInput, Task } from "~/lib/types"
+import type { CreateTaskInput } from "~/lib/types"
 import { toast } from "sonner"
-import { useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { SUB_TASKS, TASK, TASK_STATS } from "~/lib/query_key"
+import { addSubTask } from "~/lib/api"
 
 interface AddSubTaskModalProps {
-    taskId: string 
-    taskTitle: string 
+    taskId: string
     isVisible: boolean
     onClose: () => void
 }
@@ -24,27 +23,24 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: zodResolver(CreateTaskInputSchema)
     })
-    const addTaskFetchers = useFetcher<{ task: Task }>()
-    const onSubmit = async (data: CreateTaskInput & FormData) => {
-        addTaskFetchers.submit(data, {
-            action: `/api/task/${props.taskId}/tasks`,
-            method: 'post',
-            preventScrollReset: true
-        })
-
-    }
-    useEffect(() => {
-        if (addTaskFetchers.state === 'idle' && addTaskFetchers.data) {
-            if (addTaskFetchers.data.task) {
-                queryClient.invalidateQueries({queryKey: ['subTasks',props.taskId]})
-                toast.success('Tâche créée avec succès')
-                props.onClose()
-                reset()
-            }
-            else toast.error('Erreur lors de la création de la tâche')
+    const mutation = useMutation({
+        mutationKey: [TASK],
+        mutationFn: ({ dto }: { dto: CreateTaskInput }) => addSubTask(props.taskId, dto),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: [SUB_TASKS, props.taskId] })
+            queryClient.invalidateQueries({ queryKey: [TASK_STATS, props.taskId] })
+            toast.success('Tâche créée avec succès')
+            props.onClose()
+            reset()
+        },
+        onError: (e) => {
+            console.error(e)
+            toast.error("Failed to create sub-task")
         }
-    }, [addTaskFetchers.data])
-
+    })
+    const onSubmit = async (data: CreateTaskInput & FormData) => {
+        mutation.mutate({dto: data})
+    }
     return <Dialog open={props.isVisible} onOpenChange={(open) => !open && props.onClose()}>
 
         <DialogOverlay className="backdrop-blur-xs  items-center justify-center z-50" />
@@ -57,7 +53,7 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
                     </svg>
                 </div>
             </DialogHeader>
-            <addTaskFetchers.Form noValidate onSubmit={handleSubmit(onSubmit as any)}>
+            <form noValidate onSubmit={handleSubmit(onSubmit as any)}>
                 <FieldGroup className="space-y-4">
                     <Field>
                         <FieldLabel htmlFor="task-title">Titre</FieldLabel>
@@ -72,7 +68,7 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
                     <DialogFooter className="flex space-x-3 mt-6 flex-row">
                         <Field>
                             <Button type="submit" className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
-                                {addTaskFetchers.state === 'submitting' ? 'Création...' : 'Ajouter'}
+                                {mutation.isPending ? 'Création...' : 'Ajouter'}
                             </Button>
                         </Field>
                         <Button type="button" className="flex-1 h-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
@@ -80,7 +76,7 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
                         </Button>
                     </DialogFooter>
                 </FieldGroup>
-            </addTaskFetchers.Form>
+            </form>
         </DialogContent>
 
     </Dialog>

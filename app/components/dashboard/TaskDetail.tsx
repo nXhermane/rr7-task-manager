@@ -1,73 +1,109 @@
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query"
-import { type TaskStats, type PaginatedData, type Task } from "~/lib/types"
-import { SubTaskStats, TaskBadge } from "./Task"
+import { useInfiniteQuery, useMutation, useQueries, useQueryClient, type InfiniteData } from "@tanstack/react-query"
+import { type PaginatedData, type Task, type UpdateTaskDto } from "~/lib/types"
+import { getStatusColor, SubTaskStats, TaskBadge } from "./Task"
 import { Task as TaskItem } from "./Task"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AddSubTaskModal } from "./AddSubTaskModal"
 import { Button } from "../ui/button"
 import { Spinner } from "../ui/spinner"
-import { useDeleteTask } from "~/hooks/useDeleteTask"
 import { useNavigate } from "react-router"
 import { Input } from "../ui/input"
-import { useUpdateTask } from "~/hooks/useUpdateTask"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "../ui/select"
-import { Trash2, X } from "lucide-react"
+import { Calendar, LucideAlignLeft, Plus, Trash2, X } from "lucide-react"
+import { SUB_TASKS, TASK, TASK_STATS, USER_STATS } from "~/lib/query_key"
+import { deleteTask, getPaginatedSubTask, getTask, getTaskStats, updateTask } from "~/lib/api"
+import { Virtuoso } from "react-virtuoso"
+import { toast } from "sonner"
 export interface TaskDetailProps {
     taskId: string
+    onClose?: () => void
+    onPressSubTask?: (subTaskId: string) => void
+    onDelete?: () => void
 }
-export function TaskDetail({ taskId }: TaskDetailProps) {
-    const [page, setPage] = useState(0)
+export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDetailProps) {
     const queryClient = useQueryClient()
     const [showAddSubTaskModal, setShowAddSubTaskModal] = useState<boolean>(false);
     const [showDescriptionAddBtn, setShowDescriptionAddBtn] = useState<boolean>(false)
     const [showAddDescritpionInput, setShowAddDescriptionInput] = useState<boolean>(false)
+    // const [collapsed, setCollapsed] = useState<boolean>(true)
     const [editTitle, setEditTitle] = useState<boolean>(false)
-    const navigate = useNavigate()
-    const { deleteTask } = useDeleteTask(null, () => {
-        navigate('/')
-    })
-    const { updateTask } = useUpdateTask(() => {
-        queryClient.invalidateQueries({ queryKey: ['userStats'] })
-    })
-    const { data, isPending } = useQuery<Task>({
-        queryKey: ['task', taskId],
-        queryFn: async () => {
-            const response = await fetch('/api/task/' + taskId)
-            return (await response.json()).task
+
+    const deleteMutation = useMutation({
+        mutationKey: [TASK, 'delete', taskId],
+        mutationFn: ({ taskId: subTaskId }: { taskId: string }) => deleteTask(subTaskId),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: [SUB_TASKS, taskId] })
+            queryClient.invalidateQueries({ queryKey: [TASK_STATS, taskId] })
+            toast.success('Task deleted successfully')
+        },
+        onError: async (err, { }, context) => {
+            toast.error("Task deleting failed")
         }
     })
-    const fetchSubTasks = async (page: number) => {
-        const res = await fetch(`/api/task/${taskId}/tasks?page=${page}&perPage=20`)
-        return res.json()
-    }
-    const fetchSubTaskStats = async ( ) => {
-        const res = await fetch(`/api/task/${taskId}/stats`)
-        return (await res.json()).stats
-    }
+    const updateMutation = useMutation({
+        mutationKey: [TASK, 'update', taskId],
+        mutationFn: ({ taskId, dto }: { taskId: string, dto: UpdateTaskDto }) => updateTask(taskId, dto),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: [TASK, taskId] })
+            queryClient.invalidateQueries({ queryKey: [USER_STATS] })
+            toast.success('Task updated successfully')
+        },
+        onError: () => {
+            toast.error("Failed to update task")
+        }
+    })
+    const [taskResult, taskStatsResult] = useQueries({
+        queries: [
+            {
+                queryKey: [TASK, taskId],
+                queryFn: () => getTask(taskId)
+            }, {
+                queryKey: [TASK_STATS, taskId],
+                queryFn: () => getTaskStats(taskId),
+                initialData: {
+                    stats: {
+                        completed: 0,
+                        inProgress: 0,
+                        pending: 0,
+                        total: 0
+                    },
+                    taskId: ''
+                }
+            }
+        ]
+    })
 
-    const { data: subTasks, } = useInfiniteQuery<PaginatedData<Task>>({
-        queryKey: ['subTasks', taskId],
-        queryFn: ({ pageParam }) => fetchSubTasks(pageParam as number),
+
+    const { data: subTasks, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery<PaginatedData<Task>>({
+        queryKey: [SUB_TASKS, taskId],
+        queryFn: ({ pageParam }) => getPaginatedSubTask(taskId, pageParam as number),
         getNextPageParam: (lastPage, allPages) => {
-            if (lastPage.page >= lastPage.totalPage) return false
-            setPage(lastPage.page - 1)
+            if (lastPage.page >= lastPage.totalPage) return undefined
             return lastPage.page + 1
         },
-        initialPageParam: 1
-    })
-    const {data:taskStats} = useQuery<TaskStats>({
-        queryKey: ['taskStats',taskId],
-        queryFn: fetchSubTaskStats
+        initialPageParam: 1,
+        initialData: {
+            pageParams: [],
+            pages: []
+        }
     })
 
-    const hasSubtasks = data?.totalSubTasks != 0
-    const hasDescription = data?.description?.trim() !== ''
-    if (isPending) {
+    const task = taskResult.data?.task
+    const taskStats = taskStatsResult.data
+
+
+    const flat = subTasks.pages.flatMap(p => p.data)
+    useEffect(() => {
+        setShowAddDescriptionInput(false)
+        setShowDescriptionAddBtn(false)
+        setShowAddSubTaskModal(false)
+    }, [taskId])
+    if (taskResult.isPending) {
         return <div className="flex items-center justify-center h-full text-slate-400">
             <Spinner />
         </div>
     }
-    if (!data) {
+    if (!task) {
         return <div className="flex items-center justify-center h-full text-slate-400">
             <div className="text-center">
                 <svg className="w-24 h-24 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,6 +113,8 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
             </div>
         </div>
     }
+    const hasSubtasks = flat.length > 0
+    const hasDescription = typeof task.description === 'string' ? task.description.trim() !== '' : !!task?.description
     return <> <div className=" w-full h-full bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl flex flex-col overflow-hidden">
         <div className="h-full flex flex-col slide-in-right">
             <div onMouseEnter={() => {
@@ -88,47 +126,41 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
                     setShowDescriptionAddBtn(false)
                 }
             }} className="relative p-6 border-b border-slate-700">
-                <div className="flex items-start justify-between mb-4">
+                <div className={`flex items-start justify-between `}>
                     <div className="flex-1">
-                        {!editTitle && <h2 onDoubleClick={() => {
-                            setEditTitle(true)
-                        }} className="text-2xl font-bold mb-2">{data?.title}</h2>}
-                        {editTitle && <div>
-                            <Input defaultValue={data.title} onBlur={(e) => {
-                                if (e.target.value?.trim().length >= 3) {
-                                    updateTask(taskId, {
-                                        title: e.target.value.trim()
-                                    })
-                                }
+                        <h2
+                            onBlur={(e) => {
+                                updateMutation.mutate({
+                                    taskId, dto: {
+                                        title: e.target.innerText.trim()
+                                    }
+                                })
                                 setEditTitle(false)
-                            }} id="task-title" className="w-full h-12 px-4 py-3  border-none rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer le titre de la tâche" />
-                        </div>}
+                            }} onDoubleClick={() => {
+                                setEditTitle(true)
+                            }} className={`text-2xl font-bold `} contentEditable={editTitle}>{task.title}</h2>
 
-                        <TaskBadge status={data?.status || "IN_PROGRESS"} />
+
+                        {/* {!collapsed && <TaskBadge status={task.status || "IN_PROGRESS"} />} */}
                     </div>
                     <div className="flex space-x-2">
                         <button onClick={() => {
-                            deleteTask(taskId)
+                            onDelete && onDelete()
                         }} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition" title="Supprimer">
                             <Trash2 className="h-5 w-5" />
                         </button>
-                         <button onClick={() => {
-                            navigate(-1)
-                        }} className="p-2 text-gray-50 hover:bg-gray-500/20 rounded-lg transition" title="Close">
-                           <X className="h-5 w-5" />
+                        <button onClick={onClose} className="p-2 text-gray-50 hover:bg-gray-500/20 rounded-lg transition" title="Close">
+                            <X className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
 
-                <div className="text-sm text-slate-400 space-y-1">
+                {/* {!collapsed && <div className="text-sm text-slate-400 space-y-1">
                     <div className="flex items-center space-x-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Créée le {new Date(data?.createdAt || '').toLocaleDateString('fr-FR')}</span>
+                        <Calendar className="w-4 h-4" />
+                        <span>Créée le {new Date(task.createdAt || '').toLocaleDateString('fr-FR')}</span>
                     </div>
-
-                </div>
+                </div>} */}
                 {showDescriptionAddBtn && <Button onClick={() => {
                     setShowAddDescriptionInput(true)
                 }} className="absolute -bottom-6 left-1/2 -translate-x-1/2 border-none px-6 py-3 min-h-12 text-white bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
@@ -138,72 +170,87 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
                     <span>Ajouter une description</span>
                 </Button>}
             </div>
-            <div className="flex-1 overflow-y-auto p-6 max-h-fit" style={{
-                scrollbarWidth: 'none'
-            }}>
-                {(hasDescription || showAddDescritpionInput) ?
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                            </svg>
-                            Description
-                        </h3>
-                        {!showAddDescritpionInput && <p onDoubleClick={() => {
-                            setShowAddDescriptionInput(true)
-                        }} className="text-slate-300 leading-relaxed">{data?.description}</p>}
-                        {showAddDescritpionInput && <div><Input defaultValue={data.title} onBlur={(e) => {
-                            if (e.target.value?.trim().length >= 3) {
-                                updateTask(taskId, {
-                                    description: e.target.value.trim()
-                                })
+            <div className="flex-1  p-6 ">
+                <Virtuoso
+                    endReached={() => {
+                        if (hasNextPage) {
+                            fetchNextPage()
+                        }
+                    }}
+                    style={{
+                        scrollbarWidth: 'none'
+                    }}
+                    data={flat}
+                    components={{
+                        Header: () => {
+                            return <> {(hasDescription || showAddDescritpionInput) &&
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-3 flex items-center">
+                                        <LucideAlignLeft className="w-5 h-5 mr-2" />
+                                        Description
+                                    </h3>
+                                    <p onBlur={(e) => {
+                                        updateMutation.mutate({
+                                            taskId, dto: {
+                                                description: e.target.innerText
+                                            }
+                                        })
+                                        setShowAddDescriptionInput(false)
+                                    }} onDoubleClick={() => {
+                                        setShowAddDescriptionInput(true)
+                                    }} className="text-slate-300 leading-relaxed" contentEditable={showAddDescritpionInput} >{task.description}</p>
+
+                                </div>}
+
+                                {hasSubtasks && <div className="flex items-center justify-between mb-4">
+                                    <SubTaskStats {...taskStats.stats} />
+                                </div>}</>
+                        },
+                        EmptyPlaceholder: () => {
+                            return <div className="text-center py-12">
+                                <Plus className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                                <p className="text-slate-400">Cette tâche n'a pas de sous-tâches</p>
+                                <Button onClick={() => setShowAddSubTaskModal(true)} className="mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition">
+                                    Ajouter une sous-tâche
+                                </Button>
+                            </div>
+                        }
+                        ,
+                        Footer: () => {
+                            if (isFetchingNextPage) {
+                                return <div className="items-center justify-center flex"><Spinner /></div>
                             }
-                            setShowAddDescriptionInput(false)
-                        }} className="w-full h-12 px-4 py-3  border-none rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="Entrer le titre de la tâche" />
-                        </div>}
-                    </div>
-                    : ''}
-
-
-                {hasSubtasks ?
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <SubTaskStats total={0} completed={0} inProgress={0} pending={0} {...taskStats} />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3">
-                            {subTasks?.pages[0].data.map(subtask => <TaskItem key={subtask.id} task={subtask} />)}
-                        </div>
-                    </div>
-                    :
-                    <div className="text-center py-12">
-                        <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="text-slate-400">Cette tâche n'a pas de sous-tâches</p>
-                        <Button onClick={() => setShowAddSubTaskModal(true)} className="mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition">
-                            Ajouter une sous-tâche
-                        </Button>
+                        }
+                    }}
+                    itemContent={(_, item) => <div className="py-2">
+                        <TaskItem task={item} onPress={() => onPressSubTask && onPressSubTask(item.id)} onDelete={() => {
+                            deleteMutation.mutate({ taskId: item.id })
+                        }} />
                     </div>}
+
+
+                />
+
+
+
 
             </div>
             <div className="p-6 border-t border-slate-700">
                 <div className="flex space-x-3">
                     <Button onClick={() => setShowAddSubTaskModal(true)} className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                        <Plus className="w-5 h-5" />
                         <span>Ajouter une sous-tâche</span>
                     </Button>
-                    <Select defaultValue={data.status} onValueChange={(value) => {
-                        updateTask(taskId, {
-                            status: value as any
+                    <Select defaultValue={task.status} onValueChange={(value) => {
+                        updateMutation.mutate({
+                            taskId, dto: {
+                                status: value as any
+                            }
                         })
-
                     }} >
-                        <SelectTrigger withIcon={false} className=" border-none px-6 py-3 min-h-12 text-white bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
+                        <SelectTrigger withIcon={false} className={`  px-6 py-3 min-h-12 text-white   rounded-lg font-semibold transition ${getStatusColor(task.status)}`}>
                             <button className="text-white">
-                                Changer statut
+                                {task.status === 'COMPLETED' ? "Terminée" : task.status === "PENDING" ? "En attente" : "En cours"}
                             </button>
                         </SelectTrigger>
                         <SelectContent className="bg-slate-600 border-none">
@@ -226,6 +273,6 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
         </div>
 
     </div>
-        {showAddSubTaskModal && <AddSubTaskModal isVisible={showAddSubTaskModal} onClose={() => setShowAddSubTaskModal(false)} taskId={taskId} taskTitle={data?.title || ""} />}
+        {showAddSubTaskModal && <AddSubTaskModal isVisible={showAddSubTaskModal} onClose={() => setShowAddSubTaskModal(false)} taskId={taskId} />}
     </>
 }

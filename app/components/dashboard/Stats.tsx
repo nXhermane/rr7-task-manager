@@ -1,18 +1,23 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
-import { useFetcher, useOutletContext } from "react-router"
-import type { TaskStats } from "~/lib/types"
+import { CheckCircle2, Clock, FileText, Zap } from "lucide-react"
+import { useOutletContext } from "react-router"
+import { getUserStats } from "~/lib/api"
+import { USER_STATS } from "~/lib/query_key"
 import type { DashboardContextType } from "~/routes/_layout"
 
 
 export function Stats() {
   const [user] = useOutletContext<DashboardContextType>()
-  const { data, isPending } = useQuery<{ userId: string, stats: TaskStats }>({
-    queryKey: ['userStats', user.id],
-    queryFn: async () => {
-      const response = await fetch('/api/user/stats')
-      if (response.ok) {
-        return await response.json()
+  const { data } = useQuery({
+    queryKey: [USER_STATS, user.id],
+    queryFn: getUserStats,
+    initialData: {
+      userId: '',
+      stats: {
+        completed: 0,
+        inProgress: 0,
+        pending: 0,
+        total: 0
       }
     }
   })
@@ -21,12 +26,10 @@ export function Stats() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-400 text-sm">Total Tâches</p>
-          <p className="text-3xl font-bold mt-2" id="total-tasks">{isPending ? 0 : data?.stats.total}</p>
+          <p className="text-3xl font-bold mt-2" id="total-tasks">{data.stats.total}</p>
         </div>
         <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+          <FileText className="w-6 h-6 text-blue-400" />
         </div>
       </div>
     </div>
@@ -35,12 +38,10 @@ export function Stats() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-400 text-sm">En Attente</p>
-          <p className="text-3xl font-bold mt-2 text-yellow-400" id="pending-tasks">{isPending ? 0 : data?.stats.pending}</p>
+          <p className="text-3xl font-bold mt-2 text-yellow-400" id="pending-tasks">{data.stats.pending}</p>
         </div>
         <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Clock className="w-6 h-6 text-yellow-400" />
         </div>
       </div>
     </div>
@@ -49,12 +50,10 @@ export function Stats() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-400 text-sm">En Cours</p>
-          <p className="text-3xl font-bold mt-2 text-purple-400" id="progress-tasks">{isPending ? 0 : data?.stats.inProgress}</p>
+          <p className="text-3xl font-bold mt-2 text-purple-400" id="progress-tasks">{data.stats.inProgress}</p>
         </div>
         <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+          <Zap className="w-6 h-6 text-purple-400"  />
         </div>
       </div>
     </div>
@@ -63,12 +62,10 @@ export function Stats() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-400 text-sm">Terminées</p>
-          <p className="text-3xl font-bold mt-2 text-green-400" id="completed-tasks">{isPending ? 0 : data?.stats.completed}</p>
+          <p className="text-3xl font-bold mt-2 text-green-400" id="completed-tasks">{data.stats.completed}</p>
         </div>
         <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <CheckCircle2 className="w-6 h-6 text-green-400" />
         </div>
       </div>
     </div>

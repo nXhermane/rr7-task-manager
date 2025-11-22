@@ -28,7 +28,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
-    const { UnauthorizedError, handleError } = await import('./../utils/error')
+    const { UnauthorizedError, BadRequestError, handleError } = await import('./../utils/error')
     const { createSubTask } = await import('./../task/service')
     try {
         const requestMethod = request.method;
@@ -43,16 +43,14 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
             case "POST":
                 {
                     if (!taskId) {
-                        return data({
-                            status: 400,
-                            error: "Task ID is required"
-                        });
+                        throw new BadRequestError("Task ID is required")
                     }
                     const validationResult = CreateTaskInput.safeParse(formData)
                     if (!validationResult.success) {
                         return data({
-                            status: 400,
                             errors: Object.fromEntries(validationResult.error.issues.map(issue => [issue.path, issue.message]))
+                        },{
+                            status: 400
                         });
                     }
                     const task = await createSubTask(user.id, taskId, validationResult.data)
@@ -65,9 +63,8 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
     } catch (error) {
         console.error(error)
         const handled = handleError(error)
-        return data({
-            status: handled.code,
-            error: handled.message
-        });
+        throw data({ error: handled.message }, {
+            status: handled.code
+        })
     }
 }

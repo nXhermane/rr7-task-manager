@@ -35,7 +35,9 @@ export const CreateTaskInput = z.object({
 
 export const UpdateTaskInput = z.object({
     title: z.string().min(1).max(255).nullish(),
-    description: z.string().min(1).max(255).nullish(),
+    description: z.preprocess((value:string) => {
+        return value?.trim() === '' ? null : value
+    } ,z.string().max(255).nullish()),
     status: z.optional(z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"])),
 });
 

@@ -25,6 +25,6 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     throw new BadRequestError('Task ID is required');
   }
   const stats = await getTaskStats(user.id, taskId)
-  return data({ userId: user.id, taskId, stats })
+  return data({ taskId, stats })
 }
 

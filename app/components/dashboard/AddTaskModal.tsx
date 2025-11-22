@@ -1,16 +1,16 @@
-import { useFetcher } from "react-router"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogOverlay, DialogTitle } from "../ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field"
 import { Input } from "../ui/input"
 import { useForm } from "react-hook-form"
 import { Textarea } from "../ui/textarea"
-import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CreateTaskInput as CreateTaskInputSchema } from "~/lib/schema"
 import type { CreateTaskInput, Task } from "~/lib/types"
 import { toast } from "sonner"
-import { useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { TASK, TASKS, USER_STATS } from "~/lib/query_key"
+import { addTask } from "~/lib/api"
 
 interface AddTaskModalProps {
     isVisible: boolean
@@ -22,27 +22,27 @@ export function AddTaskModal(props: AddTaskModalProps) {
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: zodResolver(CreateTaskInputSchema)
     })
-    const addTaskFetchers = useFetcher<{ task: Task }>()
+    const mutation = useMutation({
+        mutationKey: [TASK],
+        mutationFn: ({ dto }: { dto: CreateTaskInput }) => addTask(dto),
+        onSuccess: async () => {
+            queryClient.invalidateQueries({ queryKey: [USER_STATS] })
+            queryClient.invalidateQueries({ queryKey: [TASKS] })
+            toast.success('Task created successfully')
+            props.onClose()
+            reset()
+        },
+        onError: (e) => {
+            console.error(e)
+            toast.error('Failed to create a new task')
+        }
+    })
+
     const onSubmit = async (data: CreateTaskInput & FormData) => {
-        addTaskFetchers.submit(data, {
-            action: '/api/task',
-            method: 'post',
-            preventScrollReset: true
-        })
+        mutation.mutate({ dto: data })
 
     }
-    useEffect(() => {
-        if (addTaskFetchers.state === 'idle' && addTaskFetchers.data) {
-            if (addTaskFetchers.data.task) {
-                queryClient.invalidateQueries({ queryKey: ['userStats'] })
-                queryClient.invalidateQueries({queryKey: ['tasks']})
-                toast.success('Tâche créée avec succès')
-                props.onClose()
-                reset()
-            }
-            else toast.error('Erreur lors de la création de la tâche')
-        }
-    }, [addTaskFetchers.data])
+
 
     return <Dialog open={props.isVisible} onOpenChange={(open) => !open && props.onClose()}>
 
@@ -56,7 +56,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
                     </svg>
                 </div>
             </DialogHeader>
-            <addTaskFetchers.Form noValidate onSubmit={handleSubmit(onSubmit as any)}>
+            <form noValidate onSubmit={handleSubmit(onSubmit as any)}>
                 <FieldGroup className="space-y-4">
                     <Field>
                         <FieldLabel htmlFor="task-title">Titre</FieldLabel>
@@ -71,7 +71,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
                     <DialogFooter className="flex space-x-3 mt-6 flex-row">
                         <Field>
                             <Button type="submit" className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
-                                {addTaskFetchers.state === 'submitting' ? 'Création...' : 'Créer'}
+                                {mutation.isPending ? 'Création...' : 'Créer'}
                             </Button>
                         </Field>
                         <Button type="button" className="flex-1 h-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
@@ -79,7 +79,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
                         </Button>
                     </DialogFooter>
                 </FieldGroup>
-            </addTaskFetchers.Form>
+            </form>
         </DialogContent>
 
     </Dialog>

@@ -1,0 +1,5 @@
+export const USER_STATS = 'user_stats'
+export const TASK_STATS = 'task_stats'
+export const TASKS = 'tasks'
+export const SUB_TASKS = 'sub_tasks'
+export const TASK = 'task'
