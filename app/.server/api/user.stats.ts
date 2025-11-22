@@ -1,22 +1,14 @@
 import { data, type LoaderFunctionArgs } from "react-router";
 import { authRequire } from "../auth/middleware";
 import { userContext } from "~/lib/context";
-import { UnauthorizedError } from "../utils/error";
-import { getUserTaskStats } from "../task/service";
-import { queryOptions } from "@tanstack/react-query";
-import { queryClient } from "~/lib/query_client";
 
 
 
 export const middleware = [authRequire]
-export const userStatsQuery = (userId: string) => {
-    return queryOptions({
-        queryKey: ["userStats", userId],
-        queryFn: async () => await getUserTaskStats(userId),
-        enabled: !!userId
-    })
-}
+
 export async function loader({ request, context }: LoaderFunctionArgs) {
+    const {getUserTaskStats} = await import ("./../task/service")
+    const {UnauthorizedError} = await import ("./../utils/error")
     const user = context.get(userContext);
     if (user === null) {
         throw new UnauthorizedError('You must be logged in to access this resource.')

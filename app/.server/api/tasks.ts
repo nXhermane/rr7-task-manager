@@ -1,23 +1,13 @@
 import { type LoaderFunctionArgs, data } from "react-router";
 import { userContext } from "~/lib/context";
-import { getTasks } from "../task/service";
-import { UnauthorizedError } from "../utils/error";
 import { authRequire } from "../auth/middleware";
-import type { PaginationDto } from "../task/dtos";
-import { queryOptions } from "@tanstack/react-query";
-import { queryClient } from "~/lib/query_client";
 
 
 export const middleware = [authRequire];
 
-export const tasksQuery = (userId: string, pagination: PaginationDto) => {
-    return queryOptions({
-        queryKey: ["tasks", `${pagination.page}:${pagination.perPage}`],
-        queryFn: async () => await getTasks(userId, pagination),
-        enabled: !!userId
-    })
-}
 export async function loader({ request, context }: LoaderFunctionArgs) {
+    const { getTasks } = await import("./../task/service")
+    const { UnauthorizedError } = await import("./../utils/error")
     const user = context.get(userContext);
     if (user === null) {
         throw new UnauthorizedError('You must be logged in to access this resource.')

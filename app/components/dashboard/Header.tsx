@@ -23,7 +23,7 @@ export function Header({ user }: HeaderProps) {
                 <div className="flex items-center space-x-4">
                     <span className="text-sm text-slate-400">Bienvenue, <span className="text-white font-semibold">{user.name}</span></span>
                     <NavLink to={'/auth/signout'}>
-                        <Button className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition">
+                        <Button className="duration-300 ease-in-out hover:scale-101 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition">
                             Déconnexion
                         </Button>
                     </NavLink>

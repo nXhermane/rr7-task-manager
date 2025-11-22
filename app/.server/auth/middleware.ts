@@ -1,11 +1,11 @@
 import { getSession } from "~/lib/session";
-import { handleError } from "../utils/error";
-import { verifyToken } from "../utils/helpers";
 import { data, redirect, type MiddlewareFunction } from "react-router";
 import { userContext } from "~/lib/context";
-import { getUser } from "../user/service";
 
 export const authRequire: MiddlewareFunction = async ({ request, context, }) => {
+    const {getUser} = await import ("./../user/service")
+    const {handleError} = await import ("./../utils/error")
+    const { verifyToken} = await import("./../utils/helpers")
     try {
         const session = await getSession(request.headers.get("Cookie"));
         if (!session.has("token")) {

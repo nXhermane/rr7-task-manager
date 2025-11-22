@@ -1,6 +1,5 @@
 import { useInfiniteQuery, useMutation, useQueries, useQueryClient } from "@tanstack/react-query"
 import { type PaginatedData, type Task, type UpdateTaskDto } from "~/lib/types"
-import { getStatusColor, SubTaskStats } from "./Task"
 import { Task as TaskItem } from "./Task"
 import { useEffect, useState } from "react"
 import { AddSubTaskModal } from "./AddSubTaskModal"
@@ -12,6 +11,8 @@ import { SUB_TASKS, TASK, TASK_STATS, USER_STATS } from "~/lib/query_key"
 import { deleteTask, getPaginatedSubTask, getTask, getTaskStats, updateTask } from "~/lib/api"
 import { Virtuoso } from "react-virtuoso"
 import { toast } from "sonner"
+import { SubTaskStats } from "./SubTaskStats"
+import { getStatusColor } from "../utils"
 export interface TaskDetailProps {
     taskId: string
     onClose?: () => void
@@ -96,12 +97,12 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
         setShowAddSubTaskModal(false)
     }, [taskId])
     if (taskResult.isPending) {
-        return <div className="flex items-center justify-center h-full text-slate-400">
+        return <div className="w-full h-full  items-center justify-center bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl flex flex-col overflow-hidden text-slate-400">
             <Spinner />
         </div>
     }
     if (!task) {
-        return <div className="flex items-center justify-center h-full text-slate-400">
+        return <div className="w-full h-full items-center justify-center bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl flex flex-col overflow-hidden text-slate-400">
             <div className="text-center">
                 <svg className="w-24 h-24 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -143,19 +144,19 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                             }} className={`text-2xl font-bold break-all ${editTitle && "border-slate-700/40 border p-1 rounded-lg"} `} contentEditable={editTitle} suppressContentEditableWarning>{task.title}</h2>
                     </div>
                     <div className="flex space-x-2">
-                        <button onClick={() => {
+                        <Button onClick={() => {
                             onDelete && onDelete()
-                        }} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition" title="Supprimer">
+                        }} className="duration-300 ease-in-out hover:scale-110 p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition" title="Supprimer">
                             <Trash2 className="h-5 w-5" />
-                        </button>
-                        <button onClick={onClose} className="p-2 text-gray-50 hover:bg-gray-500/20 rounded-lg transition" title="Close">
+                        </Button>
+                        <Button onClick={onClose} className=" duration-300 ease-in-out hover:scale-110 p-2 text-gray-50 hover:bg-gray-500/20 rounded-lg transition" title="Close">
                             <X className="h-5 w-5" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
                 {showDescriptionAddBtn && <Button onClick={() => {
                     setShowAddDescriptionInput(true)
-                }} className="absolute -bottom-6 left-1/2 -translate-x-1/2 border-none px-6 py-3 min-h-12 text-white bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
+                }} className="duration-300 ease-in-out hover:scale-110 absolute -bottom-6 left-1/2 -translate-x-1/2 border-none px-6 py-3 min-h-12 text-white bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
                     <Plus className="w-7 h-7" />
                     <span>Ajouter une description</span>
                 </Button>}
@@ -207,7 +208,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                             return <div className="text-center py-12">
                                 <Plus className="w-16 h-16 mx-auto mb-4 text-slate-600" />
                                 <p className="text-slate-400">Cette tâche n'a pas de sous-tâches</p>
-                                <Button onClick={() => setShowAddSubTaskModal(true)} className="mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition">
+                                <Button onClick={() => setShowAddSubTaskModal(true)} className="duration-300 ease-in-out hover:scale-110mt-4 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition">
                                     Ajouter une sous-tâche
                                 </Button>
                             </div>
@@ -234,7 +235,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
             </div>
             <div className="p-6 border-t border-slate-700">
                 <div className="flex space-x-3">
-                    <Button onClick={() => setShowAddSubTaskModal(true)} className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
+                    <Button onClick={() => setShowAddSubTaskModal(true)} className="duration-300 ease-in-out hover:scale-101 flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
                         <Plus className="w-5 h-5" />
                         <span>Ajouter une sous-tâche</span>
                     </Button>
@@ -245,10 +246,10 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                             }
                         })
                     }} >
-                        <SelectTrigger withIcon={false} className={`  px-6 py-3 min-h-12 text-white   rounded-lg font-semibold transition ${getStatusColor(task.status)}`}>
-                            <button className="text-white">
+                        <SelectTrigger withIcon={false} className={` duration-300 ease-in-out hover:scale-101 px-6 py-3 min-h-12 text-white   rounded-lg font-semibold transition ${getStatusColor(task.status)}`}>
+                     
                                 {task.status === 'COMPLETED' ? "Terminée" : task.status === "PENDING" ? "En attente" : "En cours"}
-                            </button>
+                         
                         </SelectTrigger>
                         <SelectContent className="bg-slate-600 border-none">
                             <SelectGroup>

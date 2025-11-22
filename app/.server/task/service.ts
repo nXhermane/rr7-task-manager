@@ -231,7 +231,6 @@ export async function deleteTask(userId: string, taskId: string) {
 }
 
 export async function getUserTaskStats(userId: string): Promise<TaskStats> {
-    console.log('[getUserTaskStats]', userId)
     const [total, completed, pending, inProgress] = await Promise.all([
         prisma.task.count({ where: { userId, parentId: null } }),
         prisma.task.count({ where: { userId, status: TastkStatus.COMPLETED, parentId: null } }),

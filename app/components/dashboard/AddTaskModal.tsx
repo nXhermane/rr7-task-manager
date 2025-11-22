@@ -50,7 +50,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
         <DialogContent className="bg-slate-800 text-white rounded-2xl p-8 max-w-sm w-full mx-4 border border-slate-700 shadow-2xl" showCloseButton={false}>
             <DialogHeader className="flex flex-row items-center justify-between mb-6">
                 <DialogTitle className="text-2xl font-bold">Nouvelle Tâche</DialogTitle>
-                <div onClick={() => props.onClose()} className="text-slate-400 hover:text-white transition">
+                <div onClick={() => props.onClose()} className="text-slate-400 hover:text-white transition duration-300 ease-in-out hover:scale-110">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -70,11 +70,11 @@ export function AddTaskModal(props: AddTaskModalProps) {
                     </Field>
                     <DialogFooter className="flex space-x-3 mt-6 flex-row">
                         <Field>
-                            <Button type="submit" className="flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
+                            <Button type="submit" className="duration-300 ease-in-out hover:scale-101 flex-1 h-12 px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition">
                                 {mutation.isPending ? 'Création...' : 'Créer'}
                             </Button>
                         </Field>
-                        <Button type="button" className="flex-1 h-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
+                        <Button type="button" className="duration-300 ease-in-out hover:scale-101 flex-1 h-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition">
                             {'Annuler'}
                         </Button>
                     </DialogFooter>

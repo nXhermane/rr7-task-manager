@@ -10,7 +10,6 @@ export function comparePasswords(password: string, hashPassword: string) {
 }
 
 export function generateToken(payload: object) {
-    console.log( process.env.JWT_SECRET )
     return jwt.sign(payload, 'my-secret', { expiresIn: '1d' });
 }
 export function verifyToken(token: string) {
