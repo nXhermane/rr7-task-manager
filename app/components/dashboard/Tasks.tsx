@@ -19,7 +19,7 @@ export function Tasks() {
     const [currentTaskId, setCurrentTaskId] = useState<string>()
     const [currentParentId, setCurrentParentId] = useState<string>()
     const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false)
-    // const historyStack = useRef<string[]>([])
+    const historyStack = useRef<string[]>([])
     const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } = useInfiniteQuery<PaginatedData<Task>>({
         queryKey: [TASKS, currentParentId],
         queryFn: ({ pageParam }) => currentParentId ? getPaginatedSubTask(currentParentId, pageParam as number) : getPaginatedTask(pageParam as number),
@@ -134,15 +134,15 @@ export function Tasks() {
                         <TaskDetail taskId={currentTaskId} onClose={async () => {
                             if (currentParentId) {
                                 setCurrentTaskId(currentParentId)
-                                // setCurrentParentId(historyStack.current.pop())
-                                setCurrentParentId(undefined)
+                                setCurrentParentId(historyStack.current.pop())
+                                // setCurrentParentId(undefined)
                             } else {
                                 setCurrentTaskId(undefined)
                             }
                         }} onDelete={() => {
                             deleteTaskMutation.mutate({ taskId: currentTaskId })
                         }} onPressSubTask={async (subTaskId) => {
-                            // historyStack.current.push(currentTaskId)
+                            historyStack.current.push(currentTaskId)
                             setCurrentParentId(currentTaskId)
                             setCurrentTaskId(subTaskId)
                         }} />
