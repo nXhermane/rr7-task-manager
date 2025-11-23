@@ -1,5 +1,5 @@
-import { NotFoundError } from "../utils/error";
-import { prisma } from "../utils/prisma";
+import { NotFoundError } from "~/shared/utils/error";
+import { prisma } from "~/shared/utils/prisma";
 import type { UpdateUserDto, UserDto } from "./dtos";
 
 export async function getUser(id: string): Promise<UserDto> {

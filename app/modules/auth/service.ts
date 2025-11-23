@@ -1,7 +1,8 @@
-import { ConflictError, UnauthorizedError } from "../utils/error";
-import { comparePasswords, hashPassword } from "../utils/helpers";
-import { prisma } from "../utils/prisma";
+
+import { comparePasswords, hashPassword } from "~/shared/utils/helpers";
 import type { SignInDto, SignUpDto } from "./dtos";
+import { ConflictError, UnauthorizedError } from "~/shared/utils/error";
+import { prisma } from "~/shared/utils/prisma";
 
 
 export async function signUp(dto: SignUpDto): Promise<void> {

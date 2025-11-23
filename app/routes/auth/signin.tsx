@@ -6,10 +6,10 @@ import { FieldGroup, FieldError, Field, FieldLabel } from "~/components/ui/field
 import { Input } from "~/components/ui/input";
 import type { SignInData } from "~/lib/types";
 import type { Route } from "./+types/signin";
-import { signIn } from "~/.server/auth/service";
-import { handleError } from "~/.server/utils/error";
+import { signIn } from "~/modules/auth/service";
+import { handleError } from "~/shared/utils/error";
 import { commitSession, getSession } from "~/lib/session";
-import { generateToken } from "~/.server/utils/helpers";
+import { generateToken } from "~/shared/utils/helpers";
 import { SignInInput } from "~/lib/schema";
 
 export async function action({ request }: Route.ActionArgs) {

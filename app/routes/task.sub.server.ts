@@ -1,14 +1,14 @@
 import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { authRequire } from "../auth/middleware";
+import { authRequire } from "~/modules/auth/middleware";
 import { userContext } from "~/lib/context";
 import { CreateTaskInput } from "~/lib/schema";
+import { BadRequestError, handleError, UnauthorizedError } from "~/shared/utils/error";
+import { createSubTask, getSubTask } from "~/modules/task/service";
 
 export const middleware = [authRequire];
 
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
-    const { UnauthorizedError, BadRequestError } = await import('./../utils/error')
-    const { getSubTask } = await import('./../task/service')
     const user = context.get(userContext);
     if (user === null) {
         throw new UnauthorizedError('You must be logged in to access this resource.')
@@ -28,8 +28,6 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
-    const { UnauthorizedError, BadRequestError, handleError } = await import('./../utils/error')
-    const { createSubTask } = await import('./../task/service')
     try {
         const requestMethod = request.method;
         const formData = Object.fromEntries(await request.formData())

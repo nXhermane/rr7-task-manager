@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/hermane/gks_solution/learning_projects/bun/react_router/rr7-task-manager/app/.server/generated/prisma",
+      "value": "/home/hermane/gks_solution/learning_projects/bun/react_router/rr7-task-manager/app/shared/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -55,7 +55,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../app/.server/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           String   @id @default(uuid())\n  email        String   @unique\n  name         String\n  hashPassword String\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  tasks Task[]\n}\n\nmodel Task {\n  id          String      @id @default(uuid())\n  title       String\n  description String?\n  status      TastkStatus @default(PENDING)\n  createdAt   DateTime    @default(now())\n  updatedAt   DateTime    @updatedAt\n  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId      String\n\n  subtasks   Task[]  @relation(\"TaskSubtasks\")\n  parentTask Task?   @relation(\"TaskSubtasks\", fields: [parentId], references: [id], onDelete: Cascade)\n  parentId   String?\n\n  @@index([parentId])\n}\n\nenum TastkStatus {\n  PENDING\n  IN_PROGRESS\n  COMPLETED\n}\n",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../app/shared/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id           String   @id @default(uuid())\n  email        String   @unique\n  name         String\n  hashPassword String\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  tasks Task[]\n}\n\nmodel Task {\n  id          String      @id @default(uuid())\n  title       String\n  description String?\n  status      TastkStatus @default(PENDING)\n  createdAt   DateTime    @default(now())\n  updatedAt   DateTime    @updatedAt\n  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId      String\n\n  subtasks   Task[]  @relation(\"TaskSubtasks\")\n  parentTask Task?   @relation(\"TaskSubtasks\", fields: [parentId], references: [id], onDelete: Cascade)\n  parentId   String?\n\n  @@index([parentId])\n}\n\nenum TastkStatus {\n  PENDING\n  IN_PROGRESS\n  COMPLETED\n}\n",
   "inlineSchemaHash": "6171801394be062b4b20f4815d2cda925e9da2f26146d432be91744f35175a45",
   "copyEngine": true,
   "runtimeDataModel": {

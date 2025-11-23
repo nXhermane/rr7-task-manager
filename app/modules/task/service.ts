@@ -1,7 +1,7 @@
 import type { PaginatedData, TaskStats } from "~/lib/types";
-import { TastkStatus } from "../generated/prisma/enums";
-import { BadRequestError, NotFoundError } from "../utils/error";
-import { prisma } from "../utils/prisma";
+import { TastkStatus } from "~/shared/generated/prisma/enums";
+import { BadRequestError, NotFoundError } from "~/shared/utils/error";
+import { prisma } from "~/shared/utils/prisma";
 import type { CreateTaskDto, PaginationDto, TaskDto, UpdateTaskDto } from "./dtos";
 
 

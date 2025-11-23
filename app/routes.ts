@@ -10,9 +10,9 @@ export default [
         route('signout', 'routes/auth/signout.tsx'),
     ])
     ,
-    route('/api/task/:id?', '.server/api/task.ts',),
-    route('/api/task/:id/tasks','.server/api/task.sub.ts'),
-    route('/api/task/:id/stats', '.server/api/task.stats.ts'),
-    route('/api/user/stats', '.server/api/user.stats.ts'),
-    route('/api/tasks', '.server/api/tasks.ts'),
+    route('/api/task/:id?', 'routes/task.server.ts',),
+    route('/api/task/:id/tasks','routes/task.sub.server.ts'),
+    route('/api/task/:id/stats', 'routes/task.stats.server.ts'),
+    route('/api/user/stats', 'routes/user.stats.server.ts'),
+    route('/api/tasks', 'routes/tasks.server.ts'),
 ] satisfies RouteConfig

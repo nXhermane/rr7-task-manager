@@ -1,5 +1,5 @@
 import { Outlet, redirect, type MiddlewareFunction } from "react-router";
-import { authRequire } from "~/.server/auth/middleware";
+import { authRequire } from "~/modules/auth/middleware";
 import { Header } from "~/components/dashboard/Header";
 import type { Route } from "./+types/_layout";
 import { userContext } from "~/lib/context";
