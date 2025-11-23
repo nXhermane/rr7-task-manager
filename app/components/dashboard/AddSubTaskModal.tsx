@@ -9,7 +9,7 @@ import { CreateTaskInput as CreateTaskInputSchema } from "~/lib/schema"
 import type { CreateTaskInput } from "~/lib/types"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { SUB_TASKS, TASK, TASK_STATS } from "~/lib/query_key"
+import { SUB_TASKS, TASK, TASK_STATS, TASKS } from "~/lib/query_key"
 import { addSubTask } from "~/lib/api"
 
 interface AddSubTaskModalProps {
@@ -29,6 +29,7 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: [SUB_TASKS, props.taskId] })
             queryClient.invalidateQueries({ queryKey: [TASK_STATS, props.taskId] })
+            queryClient.invalidateQueries({ queryKey: [TASKS] })
             toast.success('Tâche créée avec succès')
             props.onClose()
             reset()
@@ -39,7 +40,7 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
         }
     })
     const onSubmit = async (data: CreateTaskInput & FormData) => {
-        mutation.mutate({dto: data})
+        mutation.mutate({ dto: data })
     }
     return <Dialog open={props.isVisible} onOpenChange={(open) => !open && props.onClose()}>
 

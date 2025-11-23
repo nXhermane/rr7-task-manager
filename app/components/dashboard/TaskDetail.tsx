@@ -7,7 +7,7 @@ import { Button } from "../ui/button"
 import { Spinner } from "../ui/spinner"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "../ui/select"
 import { LucideAlignLeft, Plus, Trash2, X } from "lucide-react"
-import { SUB_TASKS, TASK, TASK_STATS, USER_STATS } from "~/lib/query_key"
+import { SUB_TASKS, TASK, TASK_STATS, TASKS, USER_STATS } from "~/lib/query_key"
 import { deleteTask, getPaginatedSubTask, getTask, getTaskStats, updateTask } from "~/lib/api"
 import { Virtuoso } from "react-virtuoso"
 import { toast } from "sonner"
@@ -31,6 +31,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: [SUB_TASKS, taskId] })
             queryClient.invalidateQueries({ queryKey: [TASK_STATS, taskId] })
+
             toast.success('Task deleted successfully')
         },
         onError: async (err, { }, context) => {
@@ -43,6 +44,7 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: [TASK, taskId] })
             queryClient.invalidateQueries({ queryKey: [USER_STATS] })
+            queryClient.invalidateQueries({ queryKey: [TASKS] })
             toast.success('Task updated successfully')
         },
         onError: (e, { dto }) => {
@@ -247,9 +249,9 @@ export function TaskDetail({ taskId, onClose, onPressSubTask, onDelete }: TaskDe
                         })
                     }} >
                         <SelectTrigger withIcon={false} className={` duration-300 ease-in-out hover:scale-101 px-6 py-3 min-h-12 text-white   rounded-lg font-semibold transition ${getStatusColor(task.status)}`}>
-                     
-                                {task.status === 'COMPLETED' ? "Terminée" : task.status === "PENDING" ? "En attente" : "En cours"}
-                         
+
+                            {task.status === 'COMPLETED' ? "Terminée" : task.status === "PENDING" ? "En attente" : "En cours"}
+
                         </SelectTrigger>
                         <SelectContent className="bg-slate-600 border-none">
                             <SelectGroup>
