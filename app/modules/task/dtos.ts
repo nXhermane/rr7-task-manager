@@ -1,6 +1,6 @@
 import z from "zod";
-import { TastkStatus } from "../generated/prisma/enums";
 import type { CreateTaskInput, PaginationInput, UpdateTaskInput } from "~/lib/schema";
+import { TastkStatus } from "~/shared/generated/prisma/enums";
 
 export const TaskOutput = z.object({
     id: z.uuid(),

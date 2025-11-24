@@ -1,13 +1,13 @@
 import { type LoaderFunctionArgs, data } from "react-router";
 import { userContext } from "~/lib/context";
-import { authRequire } from "../auth/middleware";
+import { authRequire } from "~/modules/auth/middleware";
+import { getTasks } from "~/modules/task/service";
+import { UnauthorizedError } from "~/shared/utils/error";
 
 
 export const middleware = [authRequire];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-    const { getTasks } = await import("./../task/service")
-    const { UnauthorizedError } = await import("./../utils/error")
     const user = context.get(userContext);
     if (user === null) {
         throw new UnauthorizedError('You must be logged in to access this resource.')

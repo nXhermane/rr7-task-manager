@@ -6,8 +6,8 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/signup";
 import type { SignUpData } from "~/lib/types";
-import { signUp } from "~/.server/auth/service";
-import { handleError } from "~/.server/utils/error";
+import { signUp } from "~/modules/auth/service";
+import { handleError } from "~/shared/utils/error";
 import { getSession } from "~/lib/session";
 import { SignUpInput } from "~/lib/schema";
 
