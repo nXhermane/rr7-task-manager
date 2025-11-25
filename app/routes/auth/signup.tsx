@@ -16,11 +16,10 @@ import { Controller, useForm } from "react-hook-form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/signup";
-import type { SignUpData } from "~/lib/types";
 import { signUp } from "~/modules/auth/service";
 import { handleError } from "~/shared/utils/error";
 import { getSession } from "~/lib/session";
-import { signUpInput } from "~/lib/schema";
+import { signUpInput, type SignUpInput } from "~/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 
@@ -67,7 +66,7 @@ export default function SignUpComponent({ actionData }: Route.ComponentProps) {
     resolver: zodResolver(signUpInput)
   });
   const submit = useSubmit();
-  const onSubmit = (data: SignUpData & FormData) => {
+  const onSubmit = (data: SignUpInput) => {
     return submit(
       {
         name: data.name,

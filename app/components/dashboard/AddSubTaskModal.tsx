@@ -12,8 +12,8 @@ import { Input } from "../ui/input";
 import { Controller, useForm } from "react-hook-form";
 import { Textarea } from "../ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createTaskInput } from "~/lib/schema";
-import type { CreateTaskInput } from "~/lib/types";
+import { createTaskInput, type CreateTaskInput } from "~/lib/schema";
+
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SUB_TASKS, TASK, TASK_STATS, TASKS } from "~/lib/query_key";
@@ -85,7 +85,6 @@ export function AddSubTaskModal(props: AddSubTaskModalProps) {
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit as any)}>
           <FieldGroup className="space-y-4">
-            \
             <Controller
               control={form.control}
               name="title"
