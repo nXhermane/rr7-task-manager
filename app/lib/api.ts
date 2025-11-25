@@ -1,9 +1,9 @@
-import { CreateTaskInput, UpdateTaskInput } from "./schema";
+import { createTaskInput, updateTaskInput } from "./schema";
 import type { CreateTaskInput as CreateTaskDto, PaginatedData, Task, TaskStats, UpdateTaskDto } from "./types";
 
 
 export const addSubTask = async (taskId: string, dto: CreateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = CreateTaskInput.parse(dto)
+    const validationResult = createTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task/${taskId}/tasks`, {
@@ -19,7 +19,7 @@ export const addSubTask = async (taskId: string, dto: CreateTaskDto): Promise<{ 
     }
 }
 export const addTask = async (dto: CreateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = CreateTaskInput.parse(dto)
+    const validationResult = createTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task`, {
@@ -36,7 +36,7 @@ export const addTask = async (dto: CreateTaskDto): Promise<{ task: Task }> => {
 }
 
 export const updateTask = async (taskId: string, dto: UpdateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = UpdateTaskInput.parse(dto)
+    const validationResult = updateTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task/${taskId}`, {

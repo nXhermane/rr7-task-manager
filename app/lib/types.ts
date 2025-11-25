@@ -27,7 +27,7 @@ export type Task = {
 
 export type CreateTaskInput = {
   title: string;
-  description: string | null;
+  description?: string;
 }
 export type TaskStats = {
     total: number

@@ -1,6 +1,6 @@
-import z from "zod";
+import z, { ZodIPv4 } from "zod";
 
-export const SignUpInput = z.object({
+export const signUpInput = z.object({
     name: z.string({
         error: "Name is required"
     }).nonempty({
@@ -17,8 +17,8 @@ export const SignUpInput = z.object({
         error: "Le mot de passe doit contenir uniquement des chiffres"
     }),
 });
-
-export const SignInInput = z.object({
+export type SignUpInput = z.infer<typeof signUpInput>;
+export const signInInput = z.object({
     email: z.email({
         error: "Email is required"
     }),
@@ -27,21 +27,24 @@ export const SignInInput = z.object({
     })
 });
 
+export type SignInInput = z.infer<typeof signInInput>;
 
-export const CreateTaskInput = z.object({
+
+export const createTaskInput = z.object({
     title: z.string().min(1).max(255),
     description: z.string().min(0).max(255).nullable(),
 })
+export type CreateTaskInput = z.infer<typeof createTaskInput>;
 
-export const UpdateTaskInput = z.object({
+export const updateTaskInput = z.object({
     title: z.string().min(1).max(255).nullish(),
     description: z.preprocess((value:string) => {
         return value?.trim() === '' ? null : value
     } ,z.string().max(255).nullish()),
     status: z.optional(z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"])),
 });
-
-export const PaginationInput = z.object({
+export type UpdateTaskInput = z.infer<typeof updateTaskInput>;
+export const paginationInput = z.object({
     page: z.number().min(1).default(1),
     perPage: z.number().min(1).max(100).default(10),
 }).refine((data) => {
@@ -49,15 +52,17 @@ export const PaginationInput = z.object({
 }, {
     message: "Invalid pagination parameters"
 });
-
-export const UserOutput = z.object({
+export type PaginationInput = z.infer<typeof paginationInput>;
+export const userOutput = z.object({
     id: z.uuid(),
     name: z.string(),
     email: z.email(),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
-export const UpdateUserInput = z.object({
+export type UserOutput = z.infer<typeof userOutput>;
+export const updateUserInput = z.object({
     name: z.string().optional(),
     email: z.email().optional(),
 })
+export type UpdateUserInput = z.infer<typeof updateUserInput>;

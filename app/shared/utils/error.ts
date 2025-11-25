@@ -70,6 +70,7 @@ export class InternalServerError extends AppError {
 
 
 export function handleError(error: unknown) {
+    console.log(error)
     if (error instanceof AppError) {
         return {
             code: mapErrorCodeToStatus(error.code),

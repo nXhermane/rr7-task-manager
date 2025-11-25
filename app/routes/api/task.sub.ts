@@ -1,7 +1,7 @@
 import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { authRequire } from "~/modules/auth/middleware";
 import { userContext } from "~/lib/context";
-import { CreateTaskInput } from "~/lib/schema";
+import { createTaskInput } from "~/lib/schema";
 import { BadRequestError, handleError, UnauthorizedError } from "~/shared/utils/error";
 import { createSubTask, getSubTask } from "~/modules/task/service";
 
@@ -43,7 +43,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
                     if (!taskId) {
                         throw new BadRequestError("Task ID is required")
                     }
-                    const validationResult = CreateTaskInput.safeParse(formData)
+                    const validationResult = createTaskInput.safeParse(formData)
                     if (!validationResult.success) {
                         return data({
                             errors: Object.fromEntries(validationResult.error.issues.map(issue => [issue.path, issue.message]))
