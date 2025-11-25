@@ -9,11 +9,10 @@ import {
 } from "../ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Textarea } from "../ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateTaskInput as CreateTaskInputSchema } from "~/lib/schema";
-import type { CreateTaskInput, Task } from "~/lib/types";
+import { createTaskInput, type CreateTaskInput  } from "~/lib/schema";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TASK, TASKS, USER_STATS } from "~/lib/query_key";
@@ -27,13 +26,8 @@ interface AddTaskModalProps {
 
 export function AddTaskModal(props: AddTaskModalProps) {
   const queryClient = useQueryClient();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(CreateTaskInputSchema),
+  const form = useForm({
+    resolver: zodResolver(createTaskInput),
   });
   const mutation = useMutation({
     mutationKey: [TASK],
@@ -43,7 +37,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
       queryClient.invalidateQueries({ queryKey: [TASKS] });
       toast.success("Task created successfully");
       props.onClose();
-      reset();
+      form.reset();
     },
     onError: (e) => {
       console.error(e);
@@ -73,39 +67,54 @@ export function AddTaskModal(props: AddTaskModalProps) {
             onClick={() => props.onClose()}
             className="text-slate-400 hover:text-white transition duration-300 ease-in-out hover:scale-110"
           >
-          <X className="w-6 h-6" />
+            <X className="w-6 h-6" />
           </div>
         </DialogHeader>
-        <form noValidate onSubmit={handleSubmit(onSubmit as any)}>
+        <form method="post" onSubmit={form.handleSubmit(onSubmit as any)}>
           <FieldGroup className="space-y-4">
-            <Field>
-              <FieldLabel htmlFor="task-title">Titre</FieldLabel>
-              <Input
-                id="task-title"
-                className="w-full h-12 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
-                placeholder="Entrer le titre de la tâche"
-                {...register("title")}
-              />
-              {errors.title && (
-                <FieldError className="text-red-500">
-                  {errors.title.message?.toString()}
-                </FieldError>
+            <Controller
+              control={form.control}
+              name="title"
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel htmlFor="task-title">Titre</FieldLabel>
+                  <Input
+                    {...field}
+                    id="task-title"
+                    className="w-full h-12 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                    placeholder="Entrer le titre de la tâche"
+                  />
+                  {fieldState.error?.message && (
+                    <FieldError className="text-red-500">
+                      {fieldState.error?.message}
+                    </FieldError>
+                  )}
+                </Field>
               )}
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="task-description">Description</FieldLabel>
-              <Textarea
-                id="task-description"
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
-                placeholder="Entrer la description de la tâche"
-                {...register("description")}
-              />
-              {errors.description && (
-                <FieldError className="text-red-500">
-                  {errors.description.message?.toString()}
-                </FieldError>
+            />
+            <Controller
+              control={form.control}
+              name="description"
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel htmlFor="task-description">
+                    Description
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="task-description"
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                    placeholder="Entrer la description de la tâche"
+                  />
+                  {fieldState.error?.message && (
+                    <FieldError className="text-red-500">
+                      {fieldState.error?.message}
+                    </FieldError>
+                  )}
+                </Field>
               )}
-            </Field>
+            />
+
             <DialogFooter className="flex space-x-3 mt-6 flex-row">
               <Field>
                 <Button

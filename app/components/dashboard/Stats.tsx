@@ -6,7 +6,7 @@ import { USER_STATS } from "~/lib/query_key";
 import type { DashboardContextType } from "~/routes/_layout";
 
 export function Stats() {
-  const [user] = useOutletContext<DashboardContextType>();
+  const user = useOutletContext<DashboardContextType>();
   const { data } = useQuery({
     queryKey: [USER_STATS, user.id],
     queryFn: getUserStats,

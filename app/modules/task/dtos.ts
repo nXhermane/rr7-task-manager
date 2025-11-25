@@ -1,5 +1,5 @@
 import z from "zod";
-import type { CreateTaskInput, PaginationInput, UpdateTaskInput } from "~/lib/schema";
+import { createTaskInput, paginationInput, updateTaskInput } from "~/lib/schema";
 import { TastkStatus } from "~/shared/generated/prisma/enums";
 
 export const TaskOutput = z.object({
@@ -13,7 +13,7 @@ export const TaskOutput = z.object({
     totalSubTasks: z.number()
 })
 
-export type CreateTaskDto = z.infer<typeof CreateTaskInput>;
-export type UpdateTaskDto = z.infer<typeof UpdateTaskInput>;
+export type CreateTaskDto = z.infer<typeof createTaskInput>;
+export type UpdateTaskDto = z.infer<typeof updateTaskInput>;
 export type TaskDto = z.infer<typeof TaskOutput>;
-export type PaginationDto = z.infer<typeof PaginationInput>;
+export type PaginationDto = z.infer<typeof paginationInput>;

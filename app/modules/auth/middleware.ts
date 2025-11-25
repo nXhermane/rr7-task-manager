@@ -18,10 +18,11 @@ export const authRequire: MiddlewareFunction = async ({ request, context, }) => 
         const user = await getUser(payload.id)
         context.set(userContext, user)
     } catch (error) {
+        console.log(process.cwd())
+        console.log(error)
         const handledError = handleError(error);
         return data({
-            status: handledError.code,
             errors: handledError.message
-        })
+        },{status: handledError.code})
     }
 }

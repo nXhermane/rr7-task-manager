@@ -1,9 +1,9 @@
-import { CreateTaskInput, UpdateTaskInput } from "./schema";
-import type { CreateTaskInput as CreateTaskDto, PaginatedData, Task, TaskStats, UpdateTaskDto } from "./types";
+import { createTaskInput, updateTaskInput, type CreateTaskInput, type UpdateTaskInput } from "./schema";
+import type {   PaginatedData, Task, TaskStats } from "./types";
 
 
-export const addSubTask = async (taskId: string, dto: CreateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = CreateTaskInput.parse(dto)
+export const addSubTask = async (taskId: string, dto: CreateTaskInput): Promise<{ task: Task }> => {
+    const validationResult = createTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task/${taskId}/tasks`, {
@@ -18,8 +18,8 @@ export const addSubTask = async (taskId: string, dto: CreateTaskDto): Promise<{ 
         throw error
     }
 }
-export const addTask = async (dto: CreateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = CreateTaskInput.parse(dto)
+export const addTask = async (dto: CreateTaskInput): Promise<{ task: Task }> => {
+    const validationResult = createTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task`, {
@@ -35,8 +35,8 @@ export const addTask = async (dto: CreateTaskDto): Promise<{ task: Task }> => {
     }
 }
 
-export const updateTask = async (taskId: string, dto: UpdateTaskDto): Promise<{ task: Task }> => {
-    const validationResult = UpdateTaskInput.parse(dto)
+export const updateTask = async (taskId: string, dto: UpdateTaskInput): Promise<{ task: Task }> => {
+    const validationResult = updateTaskInput.parse(dto)
     const formData = new FormData()
     Object.entries(validationResult).forEach(([key, value]) => formData.append(key, value as any))
     const res = await fetch(`/api/task/${taskId}`, {

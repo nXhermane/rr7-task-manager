@@ -1,12 +1,4 @@
-export type SignUpData = {
-  name: string;
-  email: string;
-  password: string;
-};
-export type SignInData = {
-  email: string;
-  password: string;
-};
+
 
 export type User = {
   id: string;
@@ -27,7 +19,7 @@ export type Task = {
 
 export type CreateTaskInput = {
   title: string;
-  description: string | null;
+  description?: string;
 }
 export type TaskStats = {
     total: number

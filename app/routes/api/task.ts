@@ -1,7 +1,7 @@
 import { data, type ActionFunctionArgs, type ClientActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { userContext } from "~/lib/context";
 import { authRequire } from "~/modules/auth/middleware";
-import { CreateTaskInput, UpdateTaskInput } from "~/lib/schema";
+import { createTaskInput, updateTaskInput } from "~/lib/schema";
 import { createTask, deleteTask, getTask, updateTask } from "~/modules/task/service";
 import { UnauthorizedError, BadRequestError, handleError } from "~/shared/utils/error";
 
@@ -32,7 +32,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
         switch (requestMethod) {
             case "POST":
                 {
-                    const validationResult = CreateTaskInput.safeParse(formData)
+                    const validationResult = createTaskInput.safeParse(formData)
                     if (!validationResult.success) {
                         return data({
                             status: 400,
@@ -50,7 +50,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
                     if (!taskId) {
                         throw new BadRequestError("Task ID is required");
                     }
-                    const validationResult = UpdateTaskInput.safeParse(formData)
+                    const validationResult = updateTaskInput.safeParse(formData)
                     if (!validationResult.success) {
                         return data({ errors: Object.fromEntries(validationResult.error.issues.map(issue => [issue.path, issue.message])) }, {
                             status: 400
